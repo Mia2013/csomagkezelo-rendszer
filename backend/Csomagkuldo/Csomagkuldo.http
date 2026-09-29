@@ -1,0 +1,6 @@
+@Csomagkuldo_HostAddress = http://localhost:5199
+
+GET {{Csomagkuldo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
