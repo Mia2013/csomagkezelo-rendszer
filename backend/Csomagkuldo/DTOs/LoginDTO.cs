@@ -1,5 +1,7 @@
 ﻿using System;
 
+namespace Csomagkuldo.DTOs
+
 public class LoginDTO
 {
 	public string UserName {get;set;}
