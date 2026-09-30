@@ -1,9 +1,9 @@
 export const ROLES = {
     GUEST: "guest",
-    USER: "user",
+    CUSTOMER: "customer",
     ADMIN: "admin",
     COURIER: "courier",
-    WAREHOUSE_WORKER: "warehouseWorker",
+    WAREHOUSE_OPERATOR: "warehouseoperator",
 };
 
 export const ALL_ROLES = Object.values(ROLES);

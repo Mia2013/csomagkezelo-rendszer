@@ -14,7 +14,7 @@ export const allPages = [
   },
   {
     id: "login",
-    name: "Belépés",
+    name: "Bejelentkezés",
     path: "/login",
     component: Login,
     showInNavbar: true,

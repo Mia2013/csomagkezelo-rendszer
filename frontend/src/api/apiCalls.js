@@ -7,6 +7,7 @@ export const controllers = {
 export const endpoints = {
     registerUser: `${controllers.AUTH}/register`,
     loginUser: `${controllers.AUTH}/login`,
+    updateUser: `${controllers.AUTH}/update`,
    
 };
 
