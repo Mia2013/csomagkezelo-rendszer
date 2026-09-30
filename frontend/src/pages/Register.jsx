@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { Box, Container } from '@mui/material'
+import RegisterForm from "../components/RegisterForm";
 
 const Register = () => {
-  return <>Register</>;
-};
-
+    return (
+        <Box>
+            <Container>
+                <RegisterForm   />
+            </Container>
+        </Box>
+    )
+}
 export default Register;
