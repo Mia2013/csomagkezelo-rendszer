@@ -1,6 +1,5 @@
-@Csomagkuldo_HostAddress = http://localhost:5199
+@Csomagkuldo_HostAddress = https://localhost:7259
 
-GET {{Csomagkuldo_HostAddress}}/weatherforecast/
+### Fejlesztői OpenAPI-leírás. Üzleti végpont még nincs.
+GET {{Csomagkuldo_HostAddress}}/openapi/v1.json
 Accept: application/json
-
-###

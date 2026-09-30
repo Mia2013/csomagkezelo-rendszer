@@ -1,4 +1,4 @@
-﻿using Csomagkuldo_Backend.Enums;
+using Csomagkuldo.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Csomagkuldo.Models
@@ -7,10 +7,8 @@ namespace Csomagkuldo.Models
     {
         public int Id { get; set; }
 
-        // 1 feladó, 1 futár
         public int CourierId { get; set; }
 
-        //1 feladó, 1 csomag
         public int PackageId { get; set; }
 
         public CourierTaskType TaskType { get; set; }
