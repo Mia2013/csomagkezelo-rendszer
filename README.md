@@ -1,104 +1,47 @@
 # Csomagkezelő rendszer
 
-Egyetemi projekt, külön C# backenddel és React frontenddel.
-
-## Jelenlegi állapot
-
-- A backend ASP.NET Core Web API, .NET 10 alatt.
-- Az öt üzleti modell: `User`, `Package`, `CourierTask`, `PackageStatusHistory`, `WarehouseLog`.
-- Az adatbázist Entity Framework Core kezeli SQL Server LocalDB-ben.
-- A frontend React + Vite indulóprojekt. Jelenleg a sablonoldal jelenik meg.
-- Még nincs bejelentkezési vagy csomagkezelési API, illetve hozzájuk tartozó felület.
-
-## Felhasználó és kapcsolatok
-
-A `User` az `IdentityUser<int>` osztályból örököl. Az `Id`, `UserName`, `Email`, `PasswordHash` és `PhoneNumber` mezőket ezért az alaposztály adja; nem kell újra felvenni őket. A felhasználóazonosító továbbra is `int`, a csomagok meglévő `int?` hivatkozásai megmaradtak.
-
-A felhasználó egyetlen szerepkörét a `User.Role` enum tárolja. Emiatt az `AppDbContext` az `IdentityUserContext<User, int>` osztályból örököl: nincs második, külön Identity-szerepkörlista. A `Users` táblát is az alaposztály biztosítja.
-
-Az Identity szolgáltatásai és adattárolása már be vannak kötve, de ez még nem jelent kész bejelentkezést. A későbbi bejelentkezésnél a szerepkört is át kell adni a hitelesített felhasználó adataiba; a `[Authorize(Roles = "Admin")]` önmagában nem olvassa a `User.Role` mezőt. A felhasználót majd `UserManager<User>` segítségével kell létrehozni, hogy az Identity végezze a jelszókezelést.
-
-A modellek kapcsolatait a `ForeignKey` és `InverseProperty` attribútumok írják le. Egy futár törlése nem törli automatikusan a feladatait: ilyen hivatkozásnál a törlést az adatbázis elutasítja. A későbbi adminisztrátori törlésnél ezt külön kezelni kell.
+Egyetemi projekt: ASP.NET Core Web API backend (.NET 10) és React + Vite frontend.
 
 ## Szükséges eszközök
 
-- .NET 10 SDK; Visual Studióban a .NET 10 fejlesztését támogató verzió és webes fejlesztői eszközök.
-- SQL Server Express LocalDB, `MSSQLLocalDB` példánnyal.
-- A frontendhez Node.js 24 LTS és npm.
+- .NET 10 SDK (vagy Visual Studio 2026, webes fejlesztés workloaddal)
+- SQL Server Express LocalDB (`MSSQLLocalDB`)
+- Node.js 24 LTS és npm
 
 ## Backend indítása
-
-A projekt gyökerében nyiss PowerShellt:
-
-```powershell
-dotnet restore backend/Csomagkuldo/Csomagkuldo.slnx
-dotnet tool restore
-$env:ASPNETCORE_ENVIRONMENT = "Development"
-dotnet ef database update --project backend/Csomagkuldo --startup-project backend/Csomagkuldo
-dotnet run --project backend/Csomagkuldo --launch-profile https
-```
-
-Az első `database update` létrehozza a `Csomagkezelo_Uj` adatbázist az `InitialDatabase` migrációból. A kapcsolati beállítás az `appsettings.Development.json` fájlban van, Windows-hitelesítést használ. Induláskor az alkalmazás nem módosítja automatikusan az adatbázis szerkezetét.
-
-A HTTPS-cím: `https://localhost:7259`.
-
-Fejlesztői ellenőrzési végpont: `https://localhost:7259/openapi/v1.json`. Ugyanez kipróbálható a `Csomagkuldo.http` fájlból. A gyökércím jelenleg 404-et ad, mert még nincs controller vagy kezdőoldal. Az OpenAPI-leírásban ezért még nincsenek üzleti végpontok.
-
-Ha a böngésző nem bízik a helyi fejlesztői tanúsítványban:
-
-```powershell
-dotnet dev-certs https --trust
-```
-
-Visual Studióban nyisd meg a `backend/Csomagkuldo/Csomagkuldo.slnx` fájlt. A Package Manager Console-ban az adatbázis frissítése:
-
-```powershell
-$env:ASPNETCORE_ENVIRONMENT = "Development"
-Update-Database
-```
-
-Ezután indítsd a projektet a `https` profillal. Nem Development környezetben a `ConnectionStrings__DefaultConnection` beállítást külön kell megadni.
-
-## Frontend indítása
-
-Egy másik terminálban, a projekt gyökeréből:
-
-```powershell
-cd frontend
-npm ci
-npm run dev
-```
-
-A megnyitandó címet a Vite kiírja a terminálra. A frontend jelenleg még nem küld kéréseket a backendnek.
-
-## Ellenőrzés
 
 A projekt gyökeréből:
 
 ```powershell
-dotnet build backend/Csomagkuldo/Csomagkuldo.slnx
-$env:ASPNETCORE_ENVIRONMENT = "Development"
-dotnet ef migrations has-pending-model-changes --project backend/Csomagkuldo
+dotnet tool restore
+dotnet ef database update --project backend/Csomagkuldo
+dotnet run --project backend/Csomagkuldo --launch-profile https
 ```
 
-A frontend mappájából:
+- Az API címe: `https://localhost:7259/api`
+- Az első `database update` létrehozza a `Csomagkezelo_Uj` adatbázist LocalDB-ben.
+- Ha a böngésző nem fogadja el a tanúsítványt: `dotnet dev-certs https --trust`
+
+**Visual Studióból:** nyisd meg a `backend/Csomagkuldo/Csomagkuldo.slnx` fájlt, a Package Manager Console-ban futtasd az `Update-Database` parancsot, majd indítsd a projektet a **https** profillal.
+
+## Frontend indítása
+
+Egy másik terminálban:
 
 ```powershell
-npm run build
-npm run lint
+cd frontend
+npm install
+npm run dev
 ```
 
-2026. szeptember 30-án ellenőrizve:
+A frontend a `http://localhost:5173` címen fut. A backend csak erről a címről fogad kéréseket (CORS), ezért a portot ne változtasd meg.
 
-- Backend fordítás: 0 hiba, 0 figyelmeztetés.
-- Az első migráció sikeresen lefutott LocalDB-n, nincs migrációból kimaradt modellváltozás.
-- 15 adatbázisos ellenőrzés sikeres: Identity-felhasználók és egész számú azonosítók, jelszókivonat és jelszóellenőrzés, ismétlődő e-mail elutasítása, feladó/címzett/futár kapcsolatok, visszafelé mutató listák, több futárfeladat, státusztörténet, vendégcsomagok, szerepkörök, raktárnapló és a futár feladatainak megőrzése törlési próbánál.
-- A próbák ideiglenes ellenőrzőprogramban, visszagörgetett tranzakcióban futottak; nem maradtak tesztfiókok vagy tesztcsomagok az adatbázisban.
-- HTTPS-indulás és az OpenAPI-végpont ellenőrizve: 200-as válasz.
-- Frontend build és lint: sikeres. A változatlan frontendfájlokat egyező ideiglenes másolaton ellenőriztem.
+## Adatbázis módosítása
 
-## Következő fejlesztések
+Ha a modellek változnak:
 
-A bejelentkezési végpont, a jogosultságellenőrzés és az üzleti műveletek még hátravannak. Csomag létrehozásakor majd az első státuszbejegyzést is létre kell hozni: a lista önmagában nem biztosítja az UML szerinti legalább egy elemet. A React frontend a jelenlegi projekt része; a korábbi Blazor-tervtől ez technológiai eltérés.
+```powershell
+dotnet ef migrations add <MigracioNeve> --project backend/Csomagkuldo
+dotnet ef database update --project backend/Csomagkuldo
+```
 
-A választott Identity-alapú modellhez a [Microsoft Identity dokumentációja](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/customize-identity-model?view=aspnetcore-10.0), az adatbázis bekötéséhez az [EF Core dokumentációja](https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/) ad támpontot.
