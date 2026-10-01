@@ -16,6 +16,10 @@ namespace Csomagkuldo.Data
         public DbSet<PackageStatusHistory> PackageStatuses { get; set; } = null!;
         public DbSet<WarehouseLog> WarehouseLogs { get; set; } = null!;
 
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<Enum>().HaveConversion<string>();
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

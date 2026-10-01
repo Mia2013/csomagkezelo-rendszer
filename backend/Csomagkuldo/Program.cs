@@ -1,6 +1,8 @@
 using Csomagkuldo.Data;
 using Csomagkuldo.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,9 +19,10 @@ builder.Services.AddIdentityCore<User>(options =>
 })
     .AddEntityFrameworkStores<AppDbContext>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddOpenApi();
-
+builder.Services.AddScoped<PasswordHasher<User>>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
