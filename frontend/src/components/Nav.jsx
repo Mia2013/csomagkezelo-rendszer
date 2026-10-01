@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import {
   AppBar,
+  Avatar,
   Container,
   Box,
   Button,
@@ -8,6 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 import { Link, useLocation } from "react-router";
+import PersonIcon from "@mui/icons-material/Person";
+
 import { useAuth } from "../provider/AuthProvider";
 import LogoutBtn from "./LogoutBtn";
 import { allPages } from "../pages/pages";
@@ -15,14 +18,13 @@ import { ROLES } from "../constants/constants";
 
 const Navigation = () => {
   const location = useLocation();
-  const { user, isAuthenticated, displayName } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const homePage = allPages.filter((q) => q.path === "/")[0];
 
   const navPages = useMemo(() => {
     const currentRole = user?.role || ROLES.GUEST;
     return allPages.filter(
-      (page) =>
-        page.showInNavbar && page.roles.includes(currentRole),
+      (page) => page.showInNavbar && page.roles.includes(currentRole),
     );
   }, [user]);
 
@@ -49,14 +51,31 @@ const Navigation = () => {
             >
               Pannon Post
             </Button>
-          {isAuthenticated && (
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {user?.firstName}
-              </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {isAuthenticated && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: "primary.main",
+                    fontSize: 16,
+                  }}
+                >
+                  <PersonIcon fontSize="small" />
+                </Avatar>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "text.primary", fontWeight: 600 }}
+                >
+                  {user?.firstName}
+                </Typography>
+              </Box>
             )}
             <LogoutBtn />
           </Box>
-
           <Box sx={{ display: "flex", gap: 1 }}>
             {navPages.map((page) => (
               <Button
@@ -74,7 +93,7 @@ const Navigation = () => {
               >
                 {page.name}
               </Button>
-            ))}
+            ))}{" "}
           </Box>
         </Toolbar>
       </Container>

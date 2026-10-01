@@ -26,8 +26,8 @@ const AuthProvider = ({ children }) => {
             setUser(decoded);
             return decoded;
         } catch (error) {
-            setAlert({ message: "Érvénytelen munkamenet!", severity: "error" });
             logOut();
+            setAlert({ message: "Érvénytelen munkamenet!", severity: "error" });
         }
     };
 
@@ -69,6 +69,7 @@ const AuthProvider = ({ children }) => {
         setToken("");
         localStorage.removeItem("csomagkezelo_token");
         delete instance.defaults.headers.common["Authorization"];
+         setAlert({ message: "Sikeres kijelentkezés!", severity: "info" });
         setUser({ role: ROLES.GUEST });
         navigate("/");
     };

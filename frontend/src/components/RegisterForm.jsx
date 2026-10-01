@@ -36,13 +36,13 @@ const RegisterForm = () => {
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  const validateForm = (data) => {
+  const validateForm = (data, confirmPassword) => {
     const errors = {};
 
     if (!data.userName.trim()) errors.userName = "Felhasználónév kötelező!";
     if (!data.email.trim()) errors.email = "Email cím kötelező!";
     if (!data.password.trim()) errors.password = "Jelszó megadása kötelező!";
-    if (data.password !== data.confirmPassword) {
+    if (data.password !== confirmPassword) {
       errors.confirmPassword = "A jelszavak nem egyeznek!";
     }
     if (!data.lastName.trim()) errors.lastName = "Vezetéknév kötelező!";
@@ -59,22 +59,19 @@ const RegisterForm = () => {
       userName: userNameRef.current.value,
       email: emailRef.current.value,
       password: passwordRef.current.value,
-      confirmPassword: confirmPasswordRef.current.value,
       lastName: lastNameRef.current.value,
       firstName: firstNameRef.current.value,
       address: addressRef.current.value,
       phoneNumber: phoneNumberRef.current.value,
     };
 
-    const errors = validateForm(formData);
+    const errors = validateForm(formData, confirmPasswordRef.current.value);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
-
     setValidationErrors({});
-    const { confirmPassword, ...registerData } = formData;
-    await register(registerData);
+    await register(formData);
   };
 
   return (

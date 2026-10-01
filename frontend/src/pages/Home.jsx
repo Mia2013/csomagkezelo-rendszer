@@ -12,7 +12,7 @@ const Home = () => {
       <Typography variant="h6" sx={{ mt: 2, color: "text.secondary" }}>
         {isAuthenticated
           ? `Üdv, ${user?.firstName}! Sikeresen bejelentkeztél.`
-          : "Jelentkezz be vagy regisztrálj a folytatáshoz."}
+          : "Jelentkezz be vagy regisztrálj a folytatáshoz"}
       </Typography>
     </Box>
   );
