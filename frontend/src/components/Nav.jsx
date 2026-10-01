@@ -51,7 +51,7 @@ const Navigation = () => {
             </Button>
           {isAuthenticated && (
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {user?.firstName}}
+                {user?.firstName}
               </Typography>
             )}
             <LogoutBtn />
