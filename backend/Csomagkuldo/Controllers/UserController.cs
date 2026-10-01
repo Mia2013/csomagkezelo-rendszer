@@ -20,7 +20,7 @@ namespace Csomagkuldo.Controllers
             var users = await _context.Users.ToListAsync();
             return Ok(users);
         }
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult>GetById(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -31,7 +31,7 @@ namespace Csomagkuldo.Controllers
             }
             return Ok(user);
         }
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult>Delete(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);

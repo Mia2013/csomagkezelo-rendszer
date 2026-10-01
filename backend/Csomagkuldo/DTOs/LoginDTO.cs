@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Csomagkuldo.DTOs
+namespace Csomagkuldo.DTOs;
 
 public class LoginDTO
 {

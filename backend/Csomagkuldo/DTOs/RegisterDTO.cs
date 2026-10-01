@@ -1,4 +1,5 @@
 ﻿using System;
+namespace Csomagkuldo.DTOs;
 
 public class RegisterDTO
 {
