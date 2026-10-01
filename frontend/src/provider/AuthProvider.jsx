@@ -38,8 +38,8 @@ const AuthProvider = ({ children }) => {
         decodeToken(activeToken);
     };
 
-    const logIn = (email, password) => {
-        postData(endpoints.loginUser, { email, password })
+    const logIn = (username, password) => {
+        postData(endpoints.loginUser, { username, password })
             .then(data => {
                 setupSession(data.token);
                 setAlert({ message: "Sikeres bejelentkezés!", severity: "success" });

@@ -22,7 +22,7 @@ const Navigation = () => {
     const currentRole = user?.role || ROLES.GUEST;
     return allPages.filter(
       (page) =>
-        page.showInNavbar && page.roles.includes(currentRole.toLowerCase()),
+        page.showInNavbar && page.roles.includes(currentRole),
     );
   }, [user]);
 

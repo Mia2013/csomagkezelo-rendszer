@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using Csomagkuldo.Data;
-using Csomagkuldo.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Csomagkuldo.Data;
 using Csomagkuldo.DTOs;
+using Csomagkuldo.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Csomagkuldo.Controllers
 {
@@ -13,10 +17,12 @@ namespace Csomagkuldo.Controllers
     {
         private readonly AppDbContext _context;
         private readonly PasswordHasher<User> passwordhaser;
-        public AuthController(AppDbContext context, PasswordHasher<User> passwordhaser)
+        private readonly IConfiguration _config;
+        public AuthController(AppDbContext context, PasswordHasher<User> passwordhaser, IConfiguration config)
         {
             _context = context;
             this.passwordhaser = passwordhaser;
+            _config = config;
         }
 
         [HttpPost("register")]
@@ -27,12 +33,14 @@ namespace Csomagkuldo.Controllers
             {
                 return BadRequest("Ez az Email cím már létezik!");
             }
-            User newuser = new User
+            User newuser = new()
             {
-                UserName = dto.UserName,
-                LastName = dto.LastName,
-                FirstName = dto.FirstName,
-                Email = dto.Email,
+                UserName = dto.UserName ?? string.Empty,
+                LastName = dto.LastName ?? string.Empty,
+                FirstName = dto.FirstName ?? string.Empty,
+                Email = dto.Email ?? string.Empty,
+                Address = dto.Address ?? string.Empty,
+                PhoneNumber = dto.PhoneNumber ?? string.Empty
             };
             newuser.PasswordHash = passwordhaser.HashPassword(newuser, dto.Password);
             await _context.Users.AddAsync(newuser);
@@ -52,14 +60,31 @@ namespace Csomagkuldo.Controllers
             {
                 return Unauthorized("Hibás jelszó!");
             }
-            return Ok(new
+            return Ok(new { token = TokenGenerate(user) });
+        }
+
+        string TokenGenerate(User user)
+        {
+            var claims = new[]
             {
-                message = "Sikeres bejelentkezés!",
-                user = new
-                {
-                    userName = user.UserName
-                }
-            });
+        new Claim(JwtRegisteredClaimNames.Sub, user.Email ?? ""),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
+        new Claim("id", user.Id.ToString()),                         
+        new Claim("firstName", user.FirstName),                     
+        new Claim("role", user.Role.ToString()),       
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(60),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

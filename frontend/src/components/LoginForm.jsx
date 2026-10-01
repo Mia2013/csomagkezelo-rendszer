@@ -26,7 +26,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
-  const emailRef = useRef();
+  const usernameRef = useRef();
   const passwordRef = useRef();
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -34,7 +34,8 @@ const LoginForm = () => {
   const validateForm = (data) => {
     const errors = {};
 
-    if (!data.email.trim()) errors.email = "Email cím kötelező!";
+    if (!data.username.trim())
+      errors.username = "Felhasználónév megadása kötelező!";
     if (!data.password.trim()) errors.password = "Jelszó megadása kötelező!";
 
     return errors;
@@ -44,7 +45,7 @@ const LoginForm = () => {
     e.preventDefault();
 
     const formData = {
-      email: emailRef.current.value,
+      username: usernameRef.current.value,
       password: passwordRef.current.value,
     };
 
@@ -55,7 +56,7 @@ const LoginForm = () => {
     }
 
     setValidationErrors({});
-    await logIn(formData.email, formData.password);
+    await logIn(formData.username, formData.password);
   };
 
   return (
@@ -72,12 +73,12 @@ const LoginForm = () => {
         >
           <TextField
             fullWidth
-            label="Email cím*"
-            type="email"
-            autoComplete="email"
-            inputRef={emailRef}
-            error={!!validationErrors.email}
-            helperText={validationErrors.email}
+            label="Felhasználónév*"
+            type="text"
+            autoComplete="username"
+            inputRef={usernameRef}
+            error={!!validationErrors.username}
+            helperText={validationErrors.username}
           />
 
           <FormControl
@@ -114,7 +115,7 @@ const LoginForm = () => {
           </Button>
 
           <Typography variant="body2" align="center">
-            Még nincs fiókod?{" "}
+            Még nincs fiókod?
             <Link to="/register">Regisztrálj!</Link>
           </Typography>
         </Box>

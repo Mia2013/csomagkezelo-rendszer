@@ -15,13 +15,13 @@ namespace Csomagkuldo.Controllers
             _context = context;
         }
         [HttpGet]
-        public async Task<IActionResult>GetAll()
+        public async Task<IActionResult> GetAll()
         {
             var users = await _context.Users.ToListAsync();
             return Ok(users);
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult>GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
@@ -32,18 +32,18 @@ namespace Csomagkuldo.Controllers
             return Ok(user);
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult>Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if(user==null)
+            if (user == null)
             {
                 return NotFound($"A(z) {id} azonosítójú felhasználó nem található!");
-                
+
             }
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return Ok($"A(z) {id} azonosítójú felhasználó sikeresen törlésre került!");
         }
-        
+
     }
 }

@@ -2,17 +2,18 @@ import axios from "axios";
 
 export const controllers = {
     AUTH: "Auth",
+    USER: "User",
 };
 
 export const endpoints = {
     registerUser: `${controllers.AUTH}/register`,
     loginUser: `${controllers.AUTH}/login`,
-    updateUser: `${controllers.AUTH}/update`,
+    updateUser: `${controllers.USER}/update`,
    
 };
 
 export const instance = axios.create({
-    baseURL: "https://localhost:7259",
+    baseURL: "https://localhost:7259/api",
     headers: {
         "Content-Type": "application/json",
     },
