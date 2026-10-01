@@ -9,7 +9,7 @@ namespace Csomagkuldo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : Controller
+    public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly PasswordHasher<User> passwordhaser;
@@ -35,6 +35,8 @@ namespace Csomagkuldo.Controllers
                 Email = dto.Email,
             };
             newuser.PasswordHash = passwordhaser.HashPassword(newuser, dto.Password);
+            await _context.Users.AddAsync(newuser);
+            await _context.SaveChangesAsync();
             return Ok("Sikeres regisztráció!");  
         }
         [HttpPost("login")]
@@ -50,7 +52,14 @@ namespace Csomagkuldo.Controllers
             {
                 return Unauthorized("Hibás jelszó!");
             }
-            return Ok("Sikeresen bejelentkezett!");
+            return Ok(new
+            {
+                message = "Sikeres bejelentkezés!",
+                user = new
+                {
+                    userName = user.UserName
+                }
+            });
         }
     }
 }
