@@ -21,7 +21,7 @@
     {
         Pickup = 0,
         Delivery = 1
-        //esetleg később egy visszaküldták vagy átvétel megtagadva még jöhet ide
+        
     }
 
     public enum CourierTaskStatus

@@ -1,67 +1,63 @@
-# Csomagkezelő rendszer
+# Csomagkezelő rendszer – 10.16-os etap
 
-Egyetemi projekt, külön C# backenddel és React frontenddel.
+Egyetemi projekt, külön ASP.NET Core Web API backenddel és React + Vite frontenddel.
+Az adatokat az Entity Framework Core tárolja SQL Server LocalDB-ben.
 
-## Jelenlegi állapot
+## Elkészült funkciók
 
-- A backend ASP.NET Core Web API, .NET 10 alatt.
-- Az öt üzleti modell: `User`, `Package`, `CourierTask`, `PackageStatusHistory`, `WarehouseLog`.
-- Az adatbázist Entity Framework Core kezeli SQL Server LocalDB-ben.
-- A frontend React + Vite indulóprojekt. Jelenleg a sablonoldal jelenik meg.
-- Még nincs bejelentkezési vagy csomagkezelési API, illetve hozzájuk tartozó felület.
+- Regisztráció, JWT-alapú bejelentkezés és kijelentkezés a meglévő frontend továbbépítésével.
+- Csomagelőjegyzés vendégként és bejelentkezve; belépéskor a szerver kapcsolja a feladóhoz a csomagot.
+- Bővített űrlap: feladó/címzett neve, címe, telefonszáma, címzett e-mailje, érték, tömeg, méret, felvételi nap és idősáv.
+- A backend UUID-t készít, és egy mentéssel létrehozza a csomagot és első `PreBooked` státuszbejegyzését.
+- Nyilvános követés UUID alapján. A válasz csak az azonosítót, a legutóbbi státuszt és annak időpontját tartalmazza.
+- Automatikus backend- és frontendtesztek.
 
-## Felhasználó és kapcsolatok
+A csomagérték egész forint, a tömeg egész gramm (1–30000 g). Méret: S/M/L.
+Felvétel legkorábban a következő budapesti naptári napra kérhető, 09:00–12:00 vagy 12:00–16:00 idősávban.
+Az eseményidők UTC-ben tárolódnak; a felület budapesti időt mutat.
+Az e-mail megadása nem igazolja a címzett személyét: `RecipientId` egyelőre null.
 
-A `User` az `IdentityUser<int>` osztályból örököl. Az `Id`, `UserName`, `Email`, `PasswordHash` és `PhoneNumber` mezőket ezért az alaposztály adja; nem kell újra felvenni őket. A felhasználóazonosító továbbra is `int`, a csomagok meglévő `int?` hivatkozásai megmaradtak.
+## Indítás
 
-A felhasználó egyetlen szerepkörét a `User.Role` enum tárolja. Emiatt az `AppDbContext` az `IdentityUserContext<User, int>` osztályból örököl: nincs második, külön Identity-szerepkörlista. A `Users` táblát is az alaposztály biztosítja.
+Szükséges: .NET 10 SDK, SQL Server Express LocalDB (`MSSQLLocalDB`), Node.js 24 és npm.
+Visual Studióban a `backend/Csomagkuldo/Csomagkuldo.slnx` tartalmazza a backendet és tesztprojektjét.
+A React frontend az alábbi külön paranccsal indul.
 
-Az Identity szolgáltatásai és adattárolása már be vannak kötve, de ez még nem jelent kész bejelentkezést. A későbbi bejelentkezésnél a szerepkört is át kell adni a hitelesített felhasználó adataiba; a `[Authorize(Roles = "Admin")]` önmagában nem olvassa a `User.Role` mezőt. A felhasználót majd `UserManager<User>` segítségével kell létrehozni, hogy az Identity végezze a jelszókezelést.
+### 1. Helyi JWT-kulcs
 
-A modellek kapcsolatait a `ForeignKey` és `InverseProperty` attribútumok írják le. Egy futár törlése nem törli automatikusan a feladatait: ilyen hivatkozásnál a törlést az adatbázis elutasítja. A későbbi adminisztrátori törlésnél ezt külön kezelni kell.
-
-## Szükséges eszközök
-
-- .NET 10 SDK; Visual Studióban a .NET 10 fejlesztését támogató verzió és webes fejlesztői eszközök.
-- SQL Server Express LocalDB, `MSSQLLocalDB` példánnyal.
-- A frontendhez Node.js 24 LTS és npm.
-
-## Backend indítása
-
-A projekt gyökerében nyiss PowerShellt:
+Ezen a gépen az `appsettings.Local.json` már elkészült. Nincs Gitben.
+Másik gépen a projekt gyökerében PowerShellből egyszer futtasd:
 
 ```powershell
-dotnet restore backend/Csomagkuldo/Csomagkuldo.slnx
+$keyFile = "backend/Csomagkuldo/appsettings.Local.json"
+if (!(Test-Path $keyFile)) {
+    $keyBytes = New-Object byte[] 48
+    $keyGenerator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $keyGenerator.GetBytes($keyBytes)
+    $keyGenerator.Dispose()
+    @{ Jwt = @{ Key = [Convert]::ToBase64String($keyBytes) } } |
+        ConvertTo-Json | Set-Content $keyFile -Encoding utf8
+}
+```
+
+A helyi fájl csak Development környezetben töltődik be. Más környezetben `Jwt__Key`,
+`Jwt__Issuer`, `Jwt__Audience` és `ConnectionStrings__DefaultConnection` környezeti változókkal állítható be az alkalmazás.
+A kulcsot ne másold Gitbe. A tesztek külön, csak tesztelésre használt kulcsot állítanak be.
+
+### 2. Backend
+
+```powershell
 dotnet tool restore
 $env:ASPNETCORE_ENVIRONMENT = "Development"
-dotnet ef database update --project backend/Csomagkuldo --startup-project backend/Csomagkuldo
+dotnet ef database update --project backend/Csomagkuldo
 dotnet run --project backend/Csomagkuldo --launch-profile https
 ```
 
-Az első `database update` létrehozza a `Csomagkezelo_Uj` adatbázist az `InitialDatabase` migrációból. A kapcsolati beállítás az `appsettings.Development.json` fájlban van, Windows-hitelesítést használ. Induláskor az alkalmazás nem módosítja automatikusan az adatbázis szerkezetét.
+API: `https://localhost:7259/api`. OpenAPI: `https://localhost:7259/openapi/v1.json`.
+Ha a helyi fejlesztői tanúsítvány még nincs megbízhatónak jelölve: `dotnet dev-certs https --trust`.
+Az alkalmazás nem futtat automatikus adatbázis-migrációt induláskor.
 
-A HTTPS-cím: `https://localhost:7259`.
-
-Fejlesztői ellenőrzési végpont: `https://localhost:7259/openapi/v1.json`. Ugyanez kipróbálható a `Csomagkuldo.http` fájlból. A gyökércím jelenleg 404-et ad, mert még nincs controller vagy kezdőoldal. Az OpenAPI-leírásban ezért még nincsenek üzleti végpontok.
-
-Ha a böngésző nem bízik a helyi fejlesztői tanúsítványban:
-
-```powershell
-dotnet dev-certs https --trust
-```
-
-Visual Studióban nyisd meg a `backend/Csomagkuldo/Csomagkuldo.slnx` fájlt. A Package Manager Console-ban az adatbázis frissítése:
-
-```powershell
-$env:ASPNETCORE_ENVIRONMENT = "Development"
-Update-Database
-```
-
-Ezután indítsd a projektet a `https` profillal. Nem Development környezetben a `ConnectionStrings__DefaultConnection` beállítást külön kell megadni.
-
-## Frontend indítása
-
-Egy másik terminálban, a projekt gyökeréből:
+### 3. Frontend, másik terminálban
 
 ```powershell
 cd frontend
@@ -69,36 +65,44 @@ npm ci
 npm run dev
 ```
 
-A megnyitandó címet a Vite kiírja a terminálra. A frontend jelenleg még nem küld kéréseket a backendnek.
+Megnyitás: `http://localhost:5173`. A port szándékosan rögzített, mert ezt engedélyezi a backend CORS-beállítása.
+Eltérő API-címhez a `VITE_API_URL` környezeti változó használható.
 
-## Ellenőrzés
+## API
 
-A projekt gyökeréből:
+| Művelet | Kérés | Válasz |
+| --- | --- | --- |
+| Regisztráció | `POST /api/Auth/register` | Sikerüzenet |
+| Bejelentkezés | `POST /api/Auth/login` | `{ token }` |
+| Előjegyzés | `POST /api/Package` | 201: `{ trackingNumber, status, createdAt }` |
+| Követés | `GET /api/Package/track?trackingNumber=<uuid>` | 200: `{ trackingNumber, status, changedAt }` |
+
+A mezőhibák 400-as, az ismeretlen UUID 404-es választ kap. A követéshez nincs szükség belépésre.
+Előjegyzésnél a hibás/lejárt token 401-es válaszhoz vezet, nem vendégfeladáshoz.
+A kliens nem állíthat státuszt, azonosítót, felhasználókapcsolatot vagy futárt.
+Példakérések: `backend/Csomagkuldo/Csomagkuldo.http`.
+
+A korábbi listázó, törlő és státuszállító csomagvégpontok nem elérhetők.
+A `UserController` ideiglenesen `[NonController]`, így nem ad ki nyilvánosan felhasználói adatokat.
+Raktárosi, futár- és adminműveletek, saját csomaglisták, csomagmódosítás és a teljes követési történet későbbi etapok.
+
+## Tesztek
 
 ```powershell
-dotnet build backend/Csomagkuldo/Csomagkuldo.slnx
-$env:ASPNETCORE_ENVIRONMENT = "Development"
-dotnet ef migrations has-pending-model-changes --project backend/Csomagkuldo
-```
-
-A frontend mappájából:
-
-```powershell
-npm run build
+dotnet test backend/Csomagkuldo/Csomagkuldo.slnx
+cd frontend
+npm test
 npm run lint
+npm run build
 ```
 
-2026. szeptember 30-án ellenőrizve:
+A backendtesztek valódi SQL Server LocalDB-t használnak, futásonként külön
+`Csomagkezelo_Tests_<uuid>` adatbázissal. Létrehozzák, migrálják, majd a végén törlik a saját adatbázisukat.
+Névellenőrzés védi a fejlesztői adatbázist. A tesztesetek egymás után futnak; egy külön próba párhuzamos előjegyzéseket küld.
+Az adatbázis nem EF InMemory helyettesítő, ezért az egyedi index és a mentés visszagörgetése is ellenőrzött.
 
-- Backend fordítás: 0 hiba, 0 figyelmeztetés.
-- Az első migráció sikeresen lefutott LocalDB-n, nincs migrációból kimaradt modellváltozás.
-- 15 adatbázisos ellenőrzés sikeres: Identity-felhasználók és egész számú azonosítók, jelszókivonat és jelszóellenőrzés, ismétlődő e-mail elutasítása, feladó/címzett/futár kapcsolatok, visszafelé mutató listák, több futárfeladat, státusztörténet, vendégcsomagok, szerepkörök, raktárnapló és a futár feladatainak megőrzése törlési próbánál.
-- A próbák ideiglenes ellenőrzőprogramban, visszagörgetett tranzakcióban futottak; nem maradtak tesztfiókok vagy tesztcsomagok az adatbázisban.
-- HTTPS-indulás és az OpenAPI-végpont ellenőrizve: 200-as válasz.
-- Frontend build és lint: sikeres. A változatlan frontendfájlokat egyező ideiglenes másolaton ellenőriztem.
+A frontendtesztek Vitestet és React Testing Libraryt használnak. A komponenspróbákban az API válaszai helyettesítettek;
+ezeket a böngészős, valódi backenddel végzett ellenőrzés egészíti ki.
 
-## Következő fejlesztések
-
-A bejelentkezési végpont, a jogosultságellenőrzés és az üzleti műveletek még hátravannak. Csomag létrehozásakor majd az első státuszbejegyzést is létre kell hozni: a lista önmagában nem biztosítja az UML szerinti legalább egy elemet. A React frontend a jelenlegi projekt része; a korábbi Blazor-tervtől ez technológiai eltérés.
-
-A választott Identity-alapú modellhez a [Microsoft Identity dokumentációja](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/customize-identity-model?view=aspnetcore-10.0), az adatbázis bekötéséhez az [EF Core dokumentációja](https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/) ad támpontot.
+A `docs` mappa helyi dokumentáció, a `.gitignore` kizárja az új fájljait.
+Az aktuális működési leírás, követelmények és tesztjegyzőkönyv ott található.

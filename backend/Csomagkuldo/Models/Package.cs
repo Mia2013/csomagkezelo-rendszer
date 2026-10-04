@@ -1,4 +1,4 @@
-﻿using Csomagkuldo.Enums;
+using Csomagkuldo.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Csomagkuldo.Models
@@ -8,6 +8,12 @@ namespace Csomagkuldo.Models
         public int Id { get; set; }
 
         public string TrackingNumber { get; set; } = string.Empty;
+
+        // Régi csomagoknál ezek az új adatok még hiányozhatnak.
+        public string? SenderPhoneNumber { get; set; }
+        public string? RecipientPhoneNumber { get; set; }
+        public string? RecipientEmail { get; set; }
+        public string? PickupSlot { get; set; }
 
         public int Value { get; set; }
 

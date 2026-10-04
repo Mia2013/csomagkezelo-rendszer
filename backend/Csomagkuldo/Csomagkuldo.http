@@ -1,5 +1,28 @@
-@Csomagkuldo_HostAddress = https://localhost:7259
+@api = https://localhost:7259/api
+@trackingNumber = 77011983-e714-47b2-9bbb-cb3058c81a2e
 
-### Fejlesztői OpenAPI-leírás. Üzleti végpont még nincs.
-GET {{Csomagkuldo_HostAddress}}/openapi/v1.json
+### Vendég előjegyzés. A felvételi nap legyen későbbi a mai budapesti dátumnál.
+POST {{api}}/Package
+Content-Type: application/json
+
+{
+  "senderName": "Teszt Feladó",
+  "senderAddress": "Veszprém, Teszt utca 1.",
+  "senderPhoneNumber": "+36301234567",
+  "recipientName": "Teszt Címzett",
+  "recipientAddress": "Pápa, Teszt utca 2.",
+  "recipientPhoneNumber": "+36201234567",
+  "recipientEmail": "recipient@example.test",
+  "value": 15000,
+  "weight": 1200,
+  "size": "M",
+  "pickupDate": "2026-10-15",
+  "pickupSlot": "09:00-12:00"
+}
+
+### A POST válaszából másold a trackingNumber értékét a fenti változóba.
+GET {{api}}/Package/track?trackingNumber={{trackingNumber}}
 Accept: application/json
+
+### Hibás UUID: 400
+GET {{api}}/Package/track?trackingNumber=hibas

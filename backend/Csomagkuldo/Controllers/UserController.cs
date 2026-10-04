@@ -1,10 +1,12 @@
-﻿using Csomagkuldo.Data;
+using Csomagkuldo.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Csomagkuldo.Controllers
 
 {
+    // Az adminfunkciók elkészültéig ezek a végpontok nem érhetők el.
+    [NonController]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : Controller

@@ -77,9 +77,17 @@ namespace Csomagkuldo.Migrations
                     b.Property<DateTime>("PickupDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("PickupSlot")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
                     b.Property<string>("RecipientAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientEmail")
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
 
                     b.Property<int?>("RecipientId")
                         .HasColumnType("int");
@@ -87,6 +95,10 @@ namespace Csomagkuldo.Migrations
                     b.Property<string>("RecipientName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientPhoneNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("SenderAddress")
                         .IsRequired()
@@ -99,13 +111,18 @@ namespace Csomagkuldo.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SenderPhoneNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("Size")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TrackingNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
 
                     b.Property<int>("Value")
                         .HasColumnType("int");
@@ -120,6 +137,9 @@ namespace Csomagkuldo.Migrations
                     b.HasIndex("RecipientId");
 
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("TrackingNumber")
+                        .IsUnique();
 
                     b.ToTable("Packages");
                 });
