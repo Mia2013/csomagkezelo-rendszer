@@ -106,3 +106,11 @@ ezeket a böngészős, valódi backenddel végzett ellenőrzés egészíti ki.
 
 A `docs` mappa helyi dokumentáció, a `.gitignore` kizárja az új fájljait.
 Az aktuális működési leírás, követelmények és tesztjegyzőkönyv ott található.
+
+mert mindig elfelejtem:
+
+cd C:\...\csomagkezelo-rendszer-uj
+dotnet run --project backend/Csomagkuldo --launch-profile https
+
+cd C:\...\csomagkezelo-rendszer-uj\frontend
+npm run dev
