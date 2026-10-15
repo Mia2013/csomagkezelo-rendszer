@@ -17,26 +17,30 @@ beforeEach(() => { vi.resetAllMocks(); });
 async function fillForm(user) {
   const fields = [
     [/Feladó neve/, "Teszt Feladó"], [/Feladó címe/, "Veszprém, Teszt utca 1."],
-    [/Feladó telefonszáma/, "+36301234567"], [/Címzett neve/, "Teszt Címzett"],
-    [/Címzett címe/, "Pápa, Teszt utca 2."], [/Címzett telefonszáma/, "+36201234567"],
-    [/Címzett e-mail-címe/, "recipient@example.test"], [/Csomag értéke/, "15000"],
+    [/Címzett neve/, "Teszt Címzett"], [/Címzett címe/, "Pápa, Teszt utca 2."],
+    [/Csomag értéke/, "15000"],
     [/Tömeg/, "1200"], [/Felvétel napja/, "2026-12-15"],
   ];
   for (const [label, value] of fields) { const input = screen.getByLabelText(label); await user.click(input); if (input.type === "number" || input.type === "date") await user.type(input, value); else await user.paste(value); }
 }
 
 describe("Csomagelőjegyzés", () => {
-  it("elküldi az űrlapot és megjeleníti a követési linket", async () => {
+  it("csak az UML mezőit kéri be, elküldi az űrlapot és megjeleníti a követési linket", async () => {
     const user = userEvent.setup();
     postData.mockResolvedValue({ trackingNumber: number });
     render(<MemoryRouter><CreatePackage /></MemoryRouter>);
+    expect(screen.queryByLabelText(/Feladó telefonszáma/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Címzett telefonszáma/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Címzett e-mail-címe/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Felvételi idősáv/)).not.toBeInTheDocument();
     await fillForm(user);
     await user.click(screen.getByRole("button", { name: "Csomag előjegyzése" }));
     expect(await screen.findByText(number)).toBeInTheDocument();
-    expect(postData).toHaveBeenCalledWith("Package", expect.objectContaining({
-      weight: 1200, value: 15000, pickupDate: "2026-12-15", pickupSlot: "09:00-12:00",
-      recipientEmail: "recipient@example.test",
-    }));
+    expect(postData).toHaveBeenCalledWith("Package", {
+      senderName: "Teszt Feladó", senderAddress: "Veszprém, Teszt utca 1.",
+      recipientName: "Teszt Címzett", recipientAddress: "Pápa, Teszt utca 2.",
+      weight: 1200, value: 15000, size: "M", pickupDate: "2026-12-15",
+    });
     expect(screen.getByRole("link", { name: "Csomag követése" })).toHaveAttribute("href", `/csomagkovetes?trackingNumber=${number}`);
   });
 

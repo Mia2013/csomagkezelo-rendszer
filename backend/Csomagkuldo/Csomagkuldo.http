@@ -8,16 +8,12 @@ Content-Type: application/json
 {
   "senderName": "Teszt Feladó",
   "senderAddress": "Veszprém, Teszt utca 1.",
-  "senderPhoneNumber": "+36301234567",
   "recipientName": "Teszt Címzett",
   "recipientAddress": "Pápa, Teszt utca 2.",
-  "recipientPhoneNumber": "+36201234567",
-  "recipientEmail": "recipient@example.test",
   "value": 15000,
   "weight": 1200,
   "size": "M",
-  "pickupDate": "2026-10-15",
-  "pickupSlot": "09:00-12:00"
+  "pickupDate": "2026-10-15"
 }
 
 ### A POST válaszából másold a trackingNumber értékét a fenti változóba.

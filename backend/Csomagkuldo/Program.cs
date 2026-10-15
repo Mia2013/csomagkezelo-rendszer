@@ -9,18 +9,12 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true);
-    builder.Configuration.AddEnvironmentVariables();
-}
-
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Hiányzik a DefaultConnection adatbázis-beállítás.");
 string jwtKey = builder.Configuration["Jwt:Key"] ?? string.Empty;
 if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
 {
-    throw new InvalidOperationException("Állíts be legalább 32 bájtos Jwt:Key értéket! Lásd a README-t.");
+    throw new InvalidOperationException("A Jwt:Key beállításnak legalább 32 bájt hosszúnak kell lennie.");
 }
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
@@ -54,7 +48,11 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 app.UseExceptionHandler();
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Csomagkuldo API"));
+}
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
 app.UseAuthentication();

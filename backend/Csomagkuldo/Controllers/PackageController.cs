@@ -54,16 +54,12 @@ public class PackageController : ControllerBase
             SenderId = senderId,
             SenderName = dto.SenderName.Trim(),
             SenderAddress = dto.SenderAddress.Trim(),
-            SenderPhoneNumber = dto.SenderPhoneNumber.Trim(),
             RecipientName = dto.RecipientName.Trim(),
             RecipientAddress = dto.RecipientAddress.Trim(),
-            RecipientPhoneNumber = dto.RecipientPhoneNumber.Trim(),
-            RecipientEmail = dto.RecipientEmail.Trim(),
             Value = dto.Value!.Value,
             Weight = dto.Weight!.Value,
             Size = dto.Size,
             PickupDate = dto.PickupDate.Value.ToDateTime(TimeOnly.MinValue),
-            PickupSlot = dto.PickupSlot,
             CurrentStatus = PackageStatus.PreBooked,
             CreatedAt = now
         };

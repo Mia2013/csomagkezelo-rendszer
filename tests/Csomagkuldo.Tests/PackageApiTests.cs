@@ -63,11 +63,9 @@ public class PackageApiTests
         return new()
         {
             ["senderName"] = "  Teszt Feladó  ", ["senderAddress"] = "Veszprém, Teszt utca 1.",
-            ["senderPhoneNumber"] = "+36301234567", ["recipientName"] = "Teszt Címzett",
-            ["recipientAddress"] = "Pápa, Minta utca 2.", ["recipientPhoneNumber"] = "+36201234567",
-            ["recipientEmail"] = "recipient@example.test", ["value"] = 15000, ["weight"] = 1200,
-            ["size"] = "M", ["pickupDate"] = DateTime.UtcNow.AddDays(2).ToString("yyyy-MM-dd"),
-            ["pickupSlot"] = "09:00-12:00"
+            ["recipientName"] = "Teszt Címzett", ["recipientAddress"] = "Pápa, Minta utca 2.",
+            ["value"] = 15000, ["weight"] = 1200,
+            ["size"] = "M", ["pickupDate"] = DateTime.UtcNow.AddDays(2).ToString("yyyy-MM-dd")
         };
     }
 
@@ -92,9 +90,11 @@ public class PackageApiTests
         var package = await db.Packages.Include(p => p.StatusHistory).SingleAsync();
         Assert.AreEqual(number, package.TrackingNumber);
         Assert.AreEqual("Teszt Feladó", package.SenderName);
-        Assert.AreEqual("recipient@example.test", package.RecipientEmail);
-        Assert.AreEqual("09:00-12:00", package.PickupSlot);
-        Assert.AreEqual("+36301234567", package.SenderPhoneNumber);
+        Assert.AreEqual("Teszt Címzett", package.RecipientName);
+        Assert.AreEqual("Pápa, Minta utca 2.", package.RecipientAddress);
+        Assert.AreEqual(15000, package.Value);
+        Assert.AreEqual(1200, package.Weight);
+        Assert.AreEqual("M", package.Size);
         Assert.IsNull(package.SenderId);
         Assert.IsNull(package.RecipientId);
         Assert.IsNull(package.CourierId);
@@ -136,10 +136,6 @@ public class PackageApiTests
     [DataTestMethod]
     [DataRow("senderName", "   ")]
     [DataRow("recipientAddress", "")]
-    [DataRow("recipientEmail", "invalid")]
-    [DataRow("senderPhoneNumber", "abc")]
-    [DataRow("recipientPhoneNumber", "")]
-    [DataRow("pickupSlot", "00:00-23:00")]
     [DataRow("size", "XL")]
     [DataRow("pickupDate", "2000-01-01")]
     [DataRow("weight", 0)]
@@ -161,7 +157,7 @@ public class PackageApiTests
     [DataRow("value")]
     [DataRow("weight")]
     [DataRow("pickupDate")]
-    [DataRow("senderPhoneNumber")]
+    [DataRow("senderName")]
     public async Task MissingRequiredFieldIsRejected(string field)
     {
         var data = Booking();

@@ -77,17 +77,9 @@ namespace Csomagkuldo.Migrations
                     b.Property<DateTime>("PickupDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PickupSlot")
-                        .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
-
                     b.Property<string>("RecipientAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RecipientEmail")
-                        .HasMaxLength(254)
-                        .HasColumnType("nvarchar(254)");
 
                     b.Property<int?>("RecipientId")
                         .HasColumnType("int");
@@ -95,10 +87,6 @@ namespace Csomagkuldo.Migrations
                     b.Property<string>("RecipientName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RecipientPhoneNumber")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("SenderAddress")
                         .IsRequired()
@@ -110,10 +98,6 @@ namespace Csomagkuldo.Migrations
                     b.Property<string>("SenderName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SenderPhoneNumber")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("Size")
                         .IsRequired()
