@@ -38,13 +38,22 @@ const Navigation = () => {
       }}
     >
       <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{ justifyContent: "space-between", flexWrap: "wrap", py: 1, gap: 1 }}>
+        <Toolbar
+          variant="dense"
+          disableGutters
+          sx={{
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            py: 0.5,
+            gap: 1,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Button
               component={Link}
               to={homePage?.path || "/"}
               sx={{
-                my: 1,
+                my: 0.5,
                 color: "primary.main",
                 fontWeight: 800,
               }}
@@ -83,7 +92,7 @@ const Navigation = () => {
                 component={Link}
                 to={page.path}
                 sx={{
-                  my: 1,
+                  my: 0.5,
                   color:
                     location.pathname === page.path
                       ? "primary.main"

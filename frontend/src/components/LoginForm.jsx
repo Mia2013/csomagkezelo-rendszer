@@ -2,13 +2,13 @@ import { useRef, useState } from "react";
 import {
   Box,
   Button,
-  Container,
   FormControl,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
   Paper,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -16,6 +16,7 @@ import { Link } from "react-router";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import LoginIcon from "@mui/icons-material/Login";
+import Person from "@mui/icons-material/Person";
 
 import { useAuth } from "../provider/AuthContext";
 import ValidationCaption from "./ValidationCaption";
@@ -60,68 +61,71 @@ const LoginForm = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper sx={{ p: 4, my: 4 }}>
-        <Typography variant="h5" component="h1" gutterBottom align="center">
+    <Paper sx={{ p: 2.5, height: "100%" }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "center" }}>
+        <Person color="primary" />
+        <Typography variant="h6" component="h2">
           Belépés
         </Typography>
+      </Stack>
 
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+      >
+        <TextField
+          fullWidth
+          size="small"
+          label="Felhasználónév*"
+          type="text"
+          autoComplete="username"
+          inputRef={usernameRef}
+          error={!!validationErrors.username}
+          helperText={validationErrors.username}
+        />
+
+        <FormControl
+          variant="outlined"
+          fullWidth
+          size="small"
+          error={!!validationErrors.password}
         >
-          <TextField
-            fullWidth
-            label="Felhasználónév*"
-            type="text"
-            autoComplete="username"
-            inputRef={usernameRef}
-            error={!!validationErrors.username}
-            helperText={validationErrors.username}
+          <InputLabel htmlFor="login-password">Jelszó*</InputLabel>
+          <OutlinedInput
+            id="login-password"
+            inputRef={passwordRef}
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            label="Jelszó*"
+            endAdornment={
+              <InputAdornment position="end">
+                <IconButton onClick={handleClickShowPassword} edge="end">
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            }
           />
+          {validationErrors.password && (
+            <ValidationCaption message={validationErrors.password} />
+          )}
+        </FormControl>
 
-          <FormControl
-            variant="outlined"
-            fullWidth
-            error={!!validationErrors.password}
-          >
-            <InputLabel htmlFor="login-password">Jelszó*</InputLabel>
-            <OutlinedInput
-              id="login-password"
-              inputRef={passwordRef}
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              label="Jelszó*"
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton onClick={handleClickShowPassword} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-            {validationErrors.password && (
-              <ValidationCaption message={validationErrors.password} />
-            )}
-          </FormControl>
+        <Button
+          type="submit"
+          variant="contained"
+          startIcon={<LoginIcon />}
+          sx={{ py: 1, mt: 1 }}
+        >
+          Belépés
+        </Button>
 
-          <Button
-            type="submit"
-            variant="contained"
-            startIcon={<LoginIcon />}
-            sx={{ py: 1.5, mt: 1 }}
-          >
-            Belépés
-          </Button>
-
-          <Typography variant="body2" align="center">
-            Még nincs fiókod?
-            <Link to="/register">Regisztrálj!</Link>
-          </Typography>
-        </Box>
-      </Paper>
-    </Container>
+        <Typography variant="body2" align="center">
+          Még nincs fiókod?{" "}
+          <Link to="/register">Regisztrálj!</Link>
+        </Typography>
+      </Box>
+    </Paper>
   );
 };
 

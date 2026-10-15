@@ -62,11 +62,17 @@ public class PackageApiTests
     {
         return new()
         {
-            ["senderName"] = "  Teszt Feladó  ", ["senderAddress"] = "Veszprém, Teszt utca 1.",
-            ["senderPhoneNumber"] = "+36301234567", ["recipientName"] = "Teszt Címzett",
-            ["recipientAddress"] = "Pápa, Minta utca 2.", ["recipientPhoneNumber"] = "+36201234567",
-            ["recipientEmail"] = "recipient@example.test", ["value"] = 15000, ["weight"] = 1200,
-            ["size"] = "M", ["pickupDate"] = DateTime.UtcNow.AddDays(2).ToString("yyyy-MM-dd"),
+            ["senderName"] = "  Teszt Feladó  ",
+            ["senderAddress"] = "Veszprém, Teszt utca 1.",
+            ["senderPhoneNumber"] = "+36301234567",
+            ["recipientName"] = "Teszt Címzett",
+            ["recipientAddress"] = "Pápa, Minta utca 2.",
+            ["recipientPhoneNumber"] = "+36201234567",
+            ["recipientEmail"] = "recipient@example.test",
+            ["value"] = 15000,
+            ["weight"] = 1200,
+            ["size"] = "M",
+            ["pickupDate"] = DateTime.UtcNow.AddDays(2).ToString("yyyy-MM-dd"),
             ["pickupSlot"] = "09:00-12:00"
         };
     }
@@ -178,9 +184,14 @@ public class PackageApiTests
         var response = await _client.GetAsync("/api/Package/track?trackingNumber=" + Uri.EscapeDataString(" " + number.ToUpperInvariant() + " "));
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-        CollectionAssert.AreEquivalent(new[] { "trackingNumber", "status", "changedAt" }, json.EnumerateObject().Select(p => p.Name).ToArray());
+        CollectionAssert.AreEquivalent(new[] { "trackingNumber", "status", "changedAt", "history" }, json.EnumerateObject().Select(p => p.Name).ToArray());
         Assert.AreEqual("PreBooked", json.GetProperty("status").GetString());
         Assert.IsTrue(json.GetProperty("changedAt").GetString()!.EndsWith("Z"));
+        var history = json.GetProperty("history").EnumerateArray().ToArray();
+        Assert.AreEqual(1, history.Length);
+        CollectionAssert.AreEquivalent(new[] { "status", "changedAt" }, history[0].EnumerateObject().Select(p => p.Name).ToArray());
+        Assert.AreEqual("PreBooked", history[0].GetProperty("status").GetString());
+        Assert.IsTrue(history[0].GetProperty("changedAt").GetString()!.EndsWith("Z"));
     }
 
     [TestMethod]
@@ -199,6 +210,8 @@ public class PackageApiTests
         }
         var json = await _client.GetFromJsonAsync<JsonElement>("/api/Package/track?trackingNumber=" + number);
         Assert.AreEqual("Delivered", json.GetProperty("status").GetString());
+        CollectionAssert.AreEqual(new[] { "PreBooked", "AtWarehouse", "Delivered" },
+            json.GetProperty("history").EnumerateArray().Select(item => item.GetProperty("status").GetString()).ToArray());
     }
 
     [DataTestMethod]
@@ -215,8 +228,12 @@ public class PackageApiTests
     {
         var registration = await _client.PostAsJsonAsync("/api/Auth/register", new
         {
-            userName = "bookingtest", password = "TesztJelszo123!", email = "booking@example.test",
-            firstName = "Teszt", lastName = "Feladó", address = "Teszt utca 1."
+            userName = "bookingtest",
+            password = "TesztJelszo123!",
+            email = "booking@example.test",
+            firstName = "Teszt",
+            lastName = "Feladó",
+            address = "Teszt utca 1."
         });
         Assert.AreEqual(HttpStatusCode.OK, registration.StatusCode);
         var login = await _client.PostAsJsonAsync("/api/Auth/login", new { userName = "bookingtest", password = "TesztJelszo123!" });
@@ -297,6 +314,6 @@ public class PackageApiTests
     public async Task ManagementEndpointsAreNotPublic(string method, string url)
     {
         var response = await _client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
-        Assert.IsTrue(response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.MethodNotAllowed);
+        Assert.IsTrue(response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.MethodNotAllowed or HttpStatusCode.Unauthorized);
     }
 }

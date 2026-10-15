@@ -43,7 +43,7 @@ export default function AuthProvider({ children }) {
     try {
       await postData(endpoints.registerUser, formData, true);
       setAlert({ message: "Sikeres regisztráció! Most jelentkezz be.", severity: "success" });
-      navigate("/login");
+      navigate("/#belepes");
     } catch (error) {
       const details = Object.values(error.errors || {}).join(" ");
       setAlert({ message: details || error.message, severity: "error" });

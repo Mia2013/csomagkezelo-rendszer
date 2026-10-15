@@ -1,10 +1,17 @@
 import axios from "axios";
 
+export const controllers = {
+  AUTH: "Auth",
+  PACKAGE: "Package",
+  USER: "User",
+};
+
 export const endpoints = {
-  registerUser: "Auth/register",
-  loginUser: "Auth/login",
-  createPackage: "Package",
-  trackPackage: "Package/track",
+  registerUser: `${controllers.AUTH}/register`,
+  loginUser: `${controllers.AUTH}/login`,
+  createPackage: `${controllers.PACKAGE}`,
+  trackPackage: `${controllers.PACKAGE}/track`,
+  getUserById: `${controllers.USER}`,
 };
 
 export const instance = axios.create({

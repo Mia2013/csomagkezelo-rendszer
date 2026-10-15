@@ -105,22 +105,29 @@ public class PackageController : ControllerBase
             return NotFound("Ezzel az azonosítóval nem található csomag.");
         }
 
-        var lastStatus = await _context.PackageStatuses.AsNoTracking()
+        var history = await _context.PackageStatuses.AsNoTracking()
             .Where(item => item.PackageId == package.Id)
-            .OrderByDescending(item => item.ChangedAt)
-            .ThenByDescending(item => item.Id)
-            .FirstOrDefaultAsync();
-        if (lastStatus == null)
+            .OrderBy(item => item.ChangedAt)
+            .ThenBy(item => item.Id)
+            .Select(item => new PackageStatusDTO
+            {
+                Status = item.Status,
+                // SQL Server a DateTime Kind értékét nem tárolja; az eseményidők UTC-ben vannak.
+                ChangedAt = DateTime.SpecifyKind(item.ChangedAt, DateTimeKind.Utc)
+            })
+            .ToListAsync();
+        if (history.Count == 0)
         {
             return Problem("A csomag státuszelőzménye hiányzik.");
         }
 
+        var lastStatus = history.Last();
         return Ok(new PackageTrackingDTO
         {
             TrackingNumber = package.TrackingNumber,
             Status = lastStatus.Status,
-            // SQL Server a DateTime Kind értékét nem tárolja; az eseményidők UTC-ben vannak.
-            ChangedAt = DateTime.SpecifyKind(lastStatus.ChangedAt, DateTimeKind.Utc)
+            ChangedAt = lastStatus.ChangedAt,
+            History = history
         });
     }
 }

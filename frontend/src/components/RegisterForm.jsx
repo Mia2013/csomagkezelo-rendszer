@@ -12,6 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Link } from "react-router";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import Send from "@mui/icons-material/Send";
@@ -41,7 +42,8 @@ const RegisterForm = () => {
 
     if (!data.userName.trim()) errors.userName = "Felhasználónév kötelező!";
     if (!data.email.trim()) errors.email = "Email cím kötelező!";
-    if (data.password.length < 8) errors.password = "A jelszó legalább 8 karakter legyen!";
+    if (data.password.length < 8)
+      errors.password = "A jelszó legalább 8 karakter legyen!";
     if (data.password !== confirmPassword) {
       errors.confirmPassword = "A jelszavak nem egyeznek!";
     }
@@ -140,7 +142,9 @@ const RegisterForm = () => {
               fullWidth
               error={!!validationErrors.confirmPassword}
             >
-              <InputLabel htmlFor="register-confirm-password">Jelszó újra*</InputLabel>
+              <InputLabel htmlFor="register-confirm-password">
+                Jelszó újra*
+              </InputLabel>
               <OutlinedInput
                 id="register-confirm-password"
                 inputRef={confirmPasswordRef}
@@ -185,6 +189,10 @@ const RegisterForm = () => {
           >
             Fiók létrehozása
           </Button>
+
+          <Typography variant="body2" align="center">
+            Van már fiókod? <Link to="/#belepes">Jelentkezz be!</Link>
+          </Typography>
         </Box>
       </Paper>
     </Container>
