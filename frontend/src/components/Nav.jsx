@@ -11,7 +11,7 @@ import {
 import { Link, useLocation } from "react-router";
 import PersonIcon from "@mui/icons-material/Person";
 
-import { useAuth } from "../provider/AuthProvider";
+import { useAuth } from "../provider/AuthContext";
 import LogoutBtn from "./LogoutBtn";
 import { allPages } from "../pages/pages";
 import { ROLES } from "../constants/constants";
@@ -38,13 +38,22 @@ const Navigation = () => {
       }}
     >
       <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{ justifyContent: "space-between" }}>
+        <Toolbar
+          variant="dense"
+          disableGutters
+          sx={{
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            py: 0.5,
+            gap: 1,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Button
               component={Link}
               to={homePage?.path || "/"}
               sx={{
-                my: 1,
+                my: 0.5,
                 color: "primary.main",
                 fontWeight: 800,
               }}
@@ -76,14 +85,14 @@ const Navigation = () => {
             )}
             <LogoutBtn />
           </Box>
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
             {navPages.map((page) => (
               <Button
                 key={page.name}
                 component={Link}
                 to={page.path}
                 sx={{
-                  my: 1,
+                  my: 0.5,
                   color:
                     location.pathname === page.path
                       ? "primary.main"

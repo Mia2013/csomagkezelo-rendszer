@@ -24,7 +24,14 @@ namespace Csomagkuldo.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            //értelmesen töröljön
+            modelBuilder.Entity<Package>().Property(p => p.TrackingNumber).HasMaxLength(36);
+            modelBuilder.Entity<Package>().HasIndex(p => p.TrackingNumber).IsUnique();
+            modelBuilder.Entity<Package>().Property(p => p.SenderPhoneNumber).HasMaxLength(30);
+            modelBuilder.Entity<Package>().Property(p => p.RecipientPhoneNumber).HasMaxLength(30);
+            modelBuilder.Entity<Package>().Property(p => p.RecipientEmail).HasMaxLength(254);
+            modelBuilder.Entity<Package>().Property(p => p.PickupSlot).HasMaxLength(11);
+
+            // A futár feladatai maradjanak meg törlési kísérletnél.
             modelBuilder.Entity<CourierTask>()
                 .HasOne(task => task.Courier)
                 .WithMany(user => user.CourierTasks)

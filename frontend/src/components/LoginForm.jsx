@@ -2,13 +2,13 @@ import { useRef, useState } from "react";
 import {
   Box,
   Button,
-  Container,
   FormControl,
   IconButton,
   InputAdornment,
   InputLabel,
   OutlinedInput,
   Paper,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -16,8 +16,9 @@ import { Link } from "react-router";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import LoginIcon from "@mui/icons-material/Login";
+import Person from "@mui/icons-material/Person";
 
-import { useAuth } from "../provider/AuthProvider";
+import { useAuth } from "../provider/AuthContext";
 import ValidationCaption from "./ValidationCaption";
 
 const LoginForm = () => {
@@ -60,11 +61,13 @@ const LoginForm = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper sx={{ p: 4, my: 4 }}>
-        <Typography variant="h5" component="h1" gutterBottom align="center">
+    <Paper sx={{ p: 2.5, height: "100%" }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "center" }}>
+        <Person color="primary" />
+        <Typography variant="h6" component="h2">
           Belépés
         </Typography>
+      </Stack>
 
         <Box
           component="form"
@@ -86,7 +89,7 @@ const LoginForm = () => {
             fullWidth
             error={!!validationErrors.password}
           >
-            <InputLabel>Jelszó*</InputLabel>
+          <InputLabel htmlFor="login-password">Jelszó*</InputLabel>
             <OutlinedInput
               inputRef={passwordRef}
               type={showPassword ? "text" : "password"}
@@ -109,18 +112,17 @@ const LoginForm = () => {
             type="submit"
             variant="contained"
             startIcon={<LoginIcon />}
-            sx={{ py: 1.5, mt: 1 }}
+          sx={{ py: 1, mt: 1 }}
           >
             Belépés
           </Button>
 
           <Typography variant="body2" align="center">
-            Még nincs fiókod?
+          Még nincs fiókod?{" "}
             <Link to="/register">Regisztrálj!</Link>
           </Typography>
         </Box>
       </Paper>
-    </Container>
   );
 };
 

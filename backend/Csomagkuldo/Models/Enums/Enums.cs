@@ -19,9 +19,9 @@
 
     public enum CourierTaskType
     {
-        Pickup,
-        Delivery
-        //esetleg később egy visszaküldták vagy átvétel megtagadva még jöhet ide
+        Pickup = 0,
+        Delivery = 1
+        
     }
 
     public enum CourierTaskStatus
