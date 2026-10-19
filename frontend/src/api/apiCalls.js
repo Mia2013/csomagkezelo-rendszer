@@ -20,15 +20,31 @@ export const instance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+function apiError(error) {
+  const data = error.response?.data;
+  const result = new Error(
+    typeof data === "string"
+      ? data
+      : data?.errors
+        ? "Ellenőrizd a megadott adatokat!"
+        : data?.detail ||
+          "A kérés nem sikerült. Ellenőrizd a szerverkapcsolatot!",
+  );
+  result.status = error.response?.status;
+  result.errors = {};
+  for (const [key, messages] of Object.entries(data?.errors || {})) {
+    const field = key.charAt(0).toLowerCase() + key.slice(1);
+    result.errors[field] = messages.join(" ");
+  }
+  return result;
+}
+
 export const getData = async (endpoint, query = {}) => {
   try {
     const result = await instance.get(`/${endpoint}`, { params: query });
     return result.data;
   } catch (error) {
-    const data = error.response?.data;
-    const errorMessage =
-      typeof data === "string" ? data : data?.message || error.message;
-    throw new Error(errorMessage, { cause: error });
+    throw apiError(error);
   }
 };
 
@@ -37,9 +53,7 @@ export const postData = async (endpoint, data) => {
     const result = await instance.post(endpoint, data);
     return result.data;
   } catch (error) {
-      const data = error.response?.data;
-    const errorMessage = typeof data === "string" ? data : data?.message || error.message;
-    throw new Error(errorMessage, { cause: error });
+    throw apiError(error);
   }
 };
 
@@ -48,9 +62,7 @@ export const putData = async (endpoint, data) => {
     const result = await instance.put(endpoint, data);
     return result.data;
   } catch (error) {
-      const data = error.response?.data;
-    const errorMessage = typeof data === "string" ? data : data?.message || error.message;
-    throw new Error(errorMessage, { cause: error });
+    throw apiError(error);
   }
 };
 
@@ -59,8 +71,6 @@ export const deleteData = async (endpoint, query) => {
     const result = await instance.delete(`/${endpoint}`, { params: query });
     return result.data;
   } catch (error) {
-      const data = error.response?.data;
-    const errorMessage = typeof data === "string" ? data : data?.message || error.message;
-    throw new Error(errorMessage, { cause: error });
+    throw apiError(error);
   }
 };

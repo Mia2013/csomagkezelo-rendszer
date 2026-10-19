@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import {
   Box,
   Button,
-  Container,
   FormControl,
   IconButton,
   InputAdornment,
@@ -124,7 +123,6 @@ const LoginForm = () => {
           </Typography>
         </Box>
       </Paper>
-    </Container>
   );
 };
 

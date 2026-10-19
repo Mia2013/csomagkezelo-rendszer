@@ -11,7 +11,7 @@ namespace Csomagkuldo.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class UserController : Controller
+    public class UserController : ControllerBase
     {
         private readonly AppDbContext _context;
         public UserController(AppDbContext context)

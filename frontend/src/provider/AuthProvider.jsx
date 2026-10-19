@@ -5,7 +5,6 @@ import { instance, postData, putData, endpoints } from "../api/apiCalls";
 import { ROLES } from "../constants/constants";
 import { AuthContext } from "./AuthContext";
 
-const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem("csomagkezelo_token") || "");
