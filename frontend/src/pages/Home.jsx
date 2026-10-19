@@ -165,9 +165,9 @@ const Home = () => {
                     sx={{ fontWeight: 700 }}
                   >
                     Kövesd a csomagod egy kattintással
-                  </Typography>
+      </Typography>
                   <Typography sx={{ color: "#e3f2fd" }}>
-                    {isAuthenticated
+        {isAuthenticated
                       ? `Üdv, ${user.firstName}!`
                       : "Csomagfeladás és követés regisztráció nélkül is."}
                   </Typography>
@@ -264,13 +264,13 @@ const Home = () => {
                 <Typography sx={{ color: "#3b4a5c" }}>
                   Lépj be, és a feladó adatai maguktól kitöltődnek, a feladás
                   pedig a fiókodhoz kapcsolódik.
-                </Typography>
+      </Typography>
               </Grid>
               <Grid size={{ xs: 12, md: 5 }}>
                 <LoginForm />
               </Grid>
             </Grid>
-          </Box>
+    </Box>
         )}
       </Container>
     </>

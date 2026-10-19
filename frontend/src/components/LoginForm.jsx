@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import {
   Box,
   Button,
+  Container,
   FormControl,
   IconButton,
   InputAdornment,
@@ -69,63 +70,61 @@ const LoginForm = () => {
         </Typography>
       </Stack>
 
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
-      >
-        <TextField
-          fullWidth
-          size="small"
-          label="Felhasználónév*"
-          type="text"
-          autoComplete="username"
-          inputRef={usernameRef}
-          error={!!validationErrors.username}
-          helperText={validationErrors.username}
-        />
-
-        <FormControl
-          variant="outlined"
-          fullWidth
-          size="small"
-          error={!!validationErrors.password}
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
         >
-          <InputLabel htmlFor="login-password">Jelszó*</InputLabel>
-          <OutlinedInput
-            id="login-password"
-            inputRef={passwordRef}
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            label="Jelszó*"
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton onClick={handleClickShowPassword} edge="end">
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            }
+          <TextField
+            fullWidth
+            label="Felhasználónév*"
+            type="text"
+            autoComplete="username"
+            inputRef={usernameRef}
+            error={!!validationErrors.username}
+            helperText={validationErrors.username}
           />
-          {validationErrors.password && (
-            <ValidationCaption message={validationErrors.password} />
-          )}
-        </FormControl>
 
-        <Button
-          type="submit"
-          variant="contained"
-          startIcon={<LoginIcon />}
+          <FormControl
+            variant="outlined"
+            fullWidth
+            error={!!validationErrors.password}
+          >
+          <InputLabel htmlFor="login-password">Jelszó*</InputLabel>
+            <OutlinedInput
+              inputRef={passwordRef}
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              label="Jelszó*"
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton onClick={handleClickShowPassword} edge="end">
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+            {validationErrors.password && (
+              <ValidationCaption message={validationErrors.password} />
+            )}
+          </FormControl>
+
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={<LoginIcon />}
           sx={{ py: 1, mt: 1 }}
-        >
-          Belépés
-        </Button>
+          >
+            Belépés
+          </Button>
 
-        <Typography variant="body2" align="center">
+          <Typography variant="body2" align="center">
           Még nincs fiókod?{" "}
-          <Link to="/register">Regisztrálj!</Link>
-        </Typography>
-      </Box>
-    </Paper>
+            <Link to="/register">Regisztrálj!</Link>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

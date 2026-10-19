@@ -2,19 +2,19 @@
 {
     public enum UserRole
     {
-        Customer = 0,
-        Courier = 1,
-        WarehouseOperator = 2,
-        Admin = 3
+        Customer,
+        Courier,
+        WarehouseOperator,
+        Admin
     }
 
     public enum PackageStatus
     {
-        PreBooked = 0,
-        InTransitToWarehouse = 1,
-        AtWarehouse = 2,
-        AssignedToCourier = 3,
-        Delivered = 4
+        PreBooked,
+        InTransitToWarehouse,
+        AtWarehouse,
+        AssignedToCourier,
+        Delivered
     }
 
     public enum CourierTaskType
@@ -26,8 +26,8 @@
 
     public enum CourierTaskStatus
     {
-        Assigned = 0,
-        InProgress = 1,
-        Completed = 2
+        Assigned,
+        InProgress,
+        Completed
     }
 }

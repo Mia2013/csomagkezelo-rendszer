@@ -2,7 +2,7 @@ import { Outlet } from "react-router";
 import { Box } from "@mui/material";
 import Nav from "../components/Nav";
 import CustomAlert from "../components/CustomAlert";
-import { useAuth } from "../provider/AuthContext";
+import { useAuth } from "../provider/AuthProvider";
 
 const Layout = () => {
   const { alert, setAlert } = useAuth();

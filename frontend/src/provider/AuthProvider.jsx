@@ -1,68 +1,99 @@
-import { useState } from "react";
+import { useContext, createContext, useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { jwtDecode } from "jwt-decode";
-import { postData, endpoints } from "../api/apiCalls";
+import { instance, postData, putData, endpoints } from "../api/apiCalls";
 import { ROLES } from "../constants/constants";
 import { AuthContext } from "./AuthContext";
 
-const guest = { token: "", user: { role: ROLES.GUEST }, expired: false };
+const AuthContext = createContext();
 
-function readSession() {
-  const token = localStorage.getItem("csomagkezelo_token");
-  if (token) {
-    try {
-      const user = jwtDecode(token);
-      return { token, user, expired: !(user.exp > Date.now() / 1000) };
-    } catch {
-      // Nem váltunk csendben vendégfeladásra: a felhasználó lépjen ki vagy be.
-      return { token, user: { role: ROLES.GUEST }, expired: true };
-    }
-  }
-  return guest;
-}
+const AuthProvider = ({ children }) => {
+    const [token, setToken] = useState(localStorage.getItem("csomagkezelo_token") || "");
+    const [user, setUser] = useState({ role: ROLES.GUEST });
+    const [alert, setAlert] = useState();
+    const navigate = useNavigate();
 
-export default function AuthProvider({ children }) {
-  const [session, setSession] = useState(readSession);
-  const [alert, setAlert] = useState(session.expired
-    ? { message: "A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra, vagy lépj ki a vendégfeladáshoz.", severity: "warning" }
-    : null);
-  const navigate = useNavigate();
+    const { isAdmin, isCourier, isCustomer, isWarehouseOperator, isAuthenticated } = useMemo(() => ({
+        isAdmin: user?.role === ROLES.ADMIN,
+        isCourier: user?.role === ROLES.COURIER,
+        isCustomer: user?.role === ROLES.CUSTOMER,
+        isWarehouseOperator: user?.role === ROLES.WAREHOUSE_OPERATOR,
+        isAuthenticated: !!token
+    }), [user, token]);
 
-  async function logIn(userName, password) {
-    try {
-      const data = await postData(endpoints.loginUser, { userName, password }, true);
-      const user = jwtDecode(data.token);
-      localStorage.setItem("csomagkezelo_token", data.token);
-      setSession({ token: data.token, user, expired: false });
-      setAlert({ message: "Sikeres bejelentkezés!", severity: "success" });
-      navigate("/");
-    } catch (error) { setAlert({ message: error.message, severity: "error" }); }
-  }
+    const decodeToken = (_token) => {
+        try {
+            const decoded = jwtDecode(_token);
+            setUser(decoded);
+            return decoded;
+        } catch (error) {
+            logOut();
+            setAlert({ message: "Érvénytelen munkamenet!", severity: "error" });
+        }
+    };
 
-  async function register(formData) {
-    try {
-      await postData(endpoints.registerUser, formData, true);
-      setAlert({ message: "Sikeres regisztráció! Most jelentkezz be.", severity: "success" });
-      navigate("/#belepes");
-    } catch (error) {
-      const details = Object.values(error.errors || {}).join(" ");
-      setAlert({ message: details || error.message, severity: "error" });
-    }
-  }
+    const setupSession = (activeToken) => {
+        setToken(activeToken);
+        localStorage.setItem("csomagkezelo_token", activeToken);
+        instance.defaults.headers.common["Authorization"] = `Bearer ${activeToken}`;
+        decodeToken(activeToken);
+    };
 
-  function logOut() {
-    localStorage.removeItem("csomagkezelo_token");
-    setSession(guest);
-    setAlert({ message: "Sikeres kijelentkezés!", severity: "info" });
-    navigate("/");
-  }
+    const logIn = (username, password) => {
+        postData(endpoints.loginUser, { username, password })
+            .then(data => {
+                setupSession(data.token);
+                setAlert({ message: "Sikeres bejelentkezés!", severity: "success" });
+            })
+            .catch(error => setAlert({ message: error.message || "Hiba a bejelentkezés során!", severity: "error" }));
+    };
 
-  return <AuthContext.Provider value={{
-    ...session, isAuthenticated: !!session.token && !session.expired, hasSession: !!session.token,
-    isAdmin: session.user.role === ROLES.ADMIN,
-    isCustomer: session.user.role === ROLES.CUSTOMER,
-    isCourier: session.user.role === ROLES.COURIER,
-    isWarehouseOperator: session.user.role === ROLES.WAREHOUSE_OPERATOR,
-    logIn, logOut, register, alert, setAlert,
-  }}>{children}</AuthContext.Provider>;
-}
+    const register = (formData) => {
+        postData(endpoints.registerUser, formData)
+            .then(() => {
+                setAlert({ message: "Sikeres regisztráció!", severity: "success" });
+                navigate("/login");
+            })
+            .catch(e => setAlert({ message: e.message || "Hiba a regisztráció során!", severity: "error" }));
+    };
+
+    const updateUser = (formData) => {
+        putData(`${endpoints.updateUser}/${user.id}`, formData)
+            .then(updatedUser => {
+                setUser(prev => ({ ...prev, ...updatedUser }));
+                setAlert({ message: "Profil sikeresen frissítve!", severity: "success" });
+            })
+            .catch(error => setAlert({ message: error.message || "Hiba a frissítés során!", severity: "error" }));
+    };
+
+    const logOut = () => {
+        setToken("");
+        localStorage.removeItem("csomagkezelo_token");
+        delete instance.defaults.headers.common["Authorization"];
+         setAlert({ message: "Sikeres kijelentkezés!", severity: "info" });
+        setUser({ role: ROLES.GUEST });
+        navigate("/");
+    };
+
+  
+    useEffect(() => {
+        if (token) {
+            setupSession(token);
+        } 
+        // eslint-disable-next-line 
+    }, []);
+
+    return (
+        <AuthContext.Provider value={{
+            token, user,
+            isAdmin, isCourier, isCustomer, isWarehouseOperator, isAuthenticated,
+            logIn, logOut, register, updateUser,
+            alert, setAlert
+        }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
+export default AuthProvider;
+export const useAuth = () => useContext(AuthContext);

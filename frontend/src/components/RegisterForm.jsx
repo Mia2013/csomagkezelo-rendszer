@@ -17,7 +17,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import Send from "@mui/icons-material/Send";
 
-import { useAuth } from "../provider/AuthContext";
+import { useAuth } from "../provider/AuthProvider";
 import ValidationCaption from "./ValidationCaption";
 
 const RegisterForm = () => {
@@ -42,8 +42,7 @@ const RegisterForm = () => {
 
     if (!data.userName.trim()) errors.userName = "Felhasználónév kötelező!";
     if (!data.email.trim()) errors.email = "Email cím kötelező!";
-    if (data.password.length < 8)
-      errors.password = "A jelszó legalább 8 karakter legyen!";
+    if (!data.password.trim()) errors.password = "Jelszó megadása kötelező!";
     if (data.password !== confirmPassword) {
       errors.confirmPassword = "A jelszavak nem egyeznek!";
     }

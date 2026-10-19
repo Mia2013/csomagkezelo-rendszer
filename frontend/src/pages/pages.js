@@ -13,6 +13,7 @@ export const allPages = [
     showInNavbar: true,
     roles: ALL_ROLES,
   },
+
   {
     id: "register",
     name: "Regisztráció",

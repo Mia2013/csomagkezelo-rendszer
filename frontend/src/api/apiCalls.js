@@ -12,6 +12,7 @@ export const endpoints = {
   createPackage: `${controllers.PACKAGE}`,
   trackPackage: `${controllers.PACKAGE}/track`,
   getUserById: `${controllers.USER}`,
+  updateUser: `${controllers.USER}/update`,
 };
 
 export const instance = axios.create({
@@ -19,35 +20,47 @@ export const instance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-function requestConfig(anonymous = false) {
-  const token = localStorage.getItem("csomagkezelo_token");
-  return { headers: { Authorization: !anonymous && token ? `Bearer ${token}` : null } };
-}
-
-function apiError(error) {
-  const data = error.response?.data;
-  const result = new Error(typeof data === "string" ? data :
-    data?.errors ? "Ellenőrizd a megadott adatokat!" :
-    data?.detail || "A kérés nem sikerült. Ellenőrizd a szerverkapcsolatot!");
-  result.status = error.response?.status;
-  result.errors = {};
-  for (const [key, messages] of Object.entries(data?.errors || {})) {
-    const field = key.charAt(0).toLowerCase() + key.slice(1);
-    result.errors[field] = messages.join(" ");
+export const getData = async (endpoint, query = {}) => {
+  try {
+    const result = await instance.get(`/${endpoint}`, { params: query });
+    return result.data;
+  } catch (error) {
+    const data = error.response?.data;
+    const errorMessage =
+      typeof data === "string" ? data : data?.message || error.message;
+    throw new Error(errorMessage, { cause: error });
   }
-  return result;
-}
+};
 
-export async function getData(endpoint, query = {}, anonymous = false) {
+export const postData = async (endpoint, data) => {
   try {
-    const response = await instance.get(endpoint, { ...requestConfig(anonymous), params: query });
-    return response.data;
-  } catch (error) { throw apiError(error); }
-}
+    const result = await instance.post(endpoint, data);
+    return result.data;
+  } catch (error) {
+      const data = error.response?.data;
+    const errorMessage = typeof data === "string" ? data : data?.message || error.message;
+    throw new Error(errorMessage, { cause: error });
+  }
+};
 
-export async function postData(endpoint, data, anonymous = false) {
+export const putData = async (endpoint, data) => {
   try {
-    const response = await instance.post(endpoint, data, requestConfig(anonymous));
-    return response.data;
-  } catch (error) { throw apiError(error); }
-}
+    const result = await instance.put(endpoint, data);
+    return result.data;
+  } catch (error) {
+      const data = error.response?.data;
+    const errorMessage = typeof data === "string" ? data : data?.message || error.message;
+    throw new Error(errorMessage, { cause: error });
+  }
+};
+
+export const deleteData = async (endpoint, query) => {
+  try {
+    const result = await instance.delete(`/${endpoint}`, { params: query });
+    return result.data;
+  } catch (error) {
+      const data = error.response?.data;
+    const errorMessage = typeof data === "string" ? data : data?.message || error.message;
+    throw new Error(errorMessage, { cause: error });
+  }
+};
