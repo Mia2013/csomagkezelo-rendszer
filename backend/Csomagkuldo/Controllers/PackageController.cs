@@ -130,4 +130,17 @@ public class PackageController : ControllerBase
             History = history
         });
     }
+    [Authorize(Roles ="WarehouseOperatior,Admin")]
+    [HttpGet("unassignedPrebooked")]
+    public async Task<IActionResult>GetUnassignedPrebookedPackages()
+    {
+        var result = await _context.Packages.Where(p => p.CurrentStatus == PackageStatus.PreBooked && p.CourierId == null).ToListAsync();
+        if(result==null)
+        {
+            return NotFound("Nincs felvételre váró csomag!");
+        }
+        return Ok(result);
+
+    }
+   
 }
