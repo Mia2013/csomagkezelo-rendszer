@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Csomagkuldo.Controllers;
 
@@ -143,7 +144,7 @@ public class PackageController : ControllerBase
 
     }
     [Authorize(Roles = "WarehouseOperator,Admin")]
-    [HttpPut("/{id}assigncourier")]
+    [HttpPut("{id}/assigncourier")]
     public async Task<IActionResult> AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -155,8 +156,8 @@ public class PackageController : ControllerBase
 
         await _context.PackageStatuses.AddAsync(new PackageStatusHistory
         {
-            Package = package,
-            Status = PackageStatus.InTransitToWarehouse,
+            PackageId = packageid,
+            Status = PackageStatus.AssignedToCourier,
             ChangedAt = DateTime.UtcNow
         });
 
@@ -165,7 +166,7 @@ public class PackageController : ControllerBase
         return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
     }
     [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
-    [HttpPut("/{id}receivetowarehouse")]
+    [HttpPut("{id}/receivetowarehouse")]
     public async Task<IActionResult>ReceiveToWarehouse(int packageid)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -176,11 +177,32 @@ public class PackageController : ControllerBase
         package.CurrentStatus = PackageStatus.AtWarehouse;
         await _context.PackageStatuses.AddAsync(new PackageStatusHistory
         {
-            Package = package,
+            PackageId = packageid,
             Status = PackageStatus.AtWarehouse,
             ChangedAt = DateTime.UtcNow
         });
         await _context.SaveChangesAsync();
         return Ok("Csomag a raktárba került!");
     }
+    [Authorize(Roles ="Courier,Admin")]
+    [HttpPut("{id}/pickuppackage")]
+    public async Task<IActionResult>CourirerPickupPackage(int packageid)
+    {
+        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
+        if(package==null)
+        {
+            return NotFound("Csomag nem található");
+        }
+        package.CurrentStatus = PackageStatus.InTransitToWarehouse;
+        await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+        {
+            Package = package,
+            Status = PackageStatus.InTransitToWarehouse,
+            ChangedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+        return Ok("Csomag sikeresen felvéve!");
+    }
+
+    
 }
