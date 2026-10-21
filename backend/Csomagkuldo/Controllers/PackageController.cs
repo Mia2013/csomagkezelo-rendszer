@@ -130,38 +130,57 @@ public class PackageController : ControllerBase
             History = history
         });
     }
-    [Authorize(Roles ="WarehouseOperatior,Admin")]
+    [Authorize(Roles = "WarehouseOperatior,Admin")]
     [HttpGet("unassignedPrebooked")]
-    public async Task<IActionResult>GetUnassignedPrebookedPackages()
+    public async Task<IActionResult> GetUnassignedPrebookedPackages()
     {
         var result = await _context.Packages.Where(p => p.CurrentStatus == PackageStatus.PreBooked && p.CourierId == null).ToListAsync();
-        if(result==null)
+        if (result == null)
         {
             return NotFound("Nincs felvételre váró csomag!");
         }
         return Ok(result);
 
     }
-    [Authorize(Roles ="WarehouseOperator,Admin")]
+    [Authorize(Roles = "WarehouseOperator,Admin")]
     [HttpPut("/{id}assigncourier")]
-    public async Task<IActionResult>AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
+    public async Task<IActionResult> AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
         var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == courierdto.CourierId);
-        if(package==null||courier==null)
+        if (package == null || courier == null)
         {
             return BadRequest("A hozzárendelés nem hajtható végre!");
         }
 
         await _context.PackageStatuses.AddAsync(new PackageStatusHistory
         {
-            Id = packageid,
-            Status = PackageStatus.AssignedToCourier,
+            Package = package,
+            Status = PackageStatus.InTransitToWarehouse,
             ChangedAt = DateTime.UtcNow
         });
 
         package.CurrentStatus = PackageStatus.AssignedToCourier;
         await _context.SaveChangesAsync();
         return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
+    }
+    [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
+    [HttpPut("/{id}receivetowarehouse")]
+    public async Task<IActionResult>ReceiveToWarehouse(int packageid)
+    {
+        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
+        if(package==null)
+        {
+            return NotFound("A csomag nem található!");
+        }
+        package.CurrentStatus = PackageStatus.AtWarehouse;
+        await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+        {
+            Package = package,
+            Status = PackageStatus.AtWarehouse,
+            ChangedAt = DateTime.UtcNow
+        });
+        await _context.SaveChangesAsync();
+        return Ok("Csomag a raktárba került!");
     }
 }
