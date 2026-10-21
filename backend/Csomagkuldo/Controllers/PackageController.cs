@@ -144,7 +144,7 @@ public class PackageController : ControllerBase
 
     }
     [Authorize(Roles = "WarehouseOperator,Admin")]
-    [HttpPut("{id}/assigncourier")]
+    [HttpPut("{packageid}/assigncourier")]
     public async Task<IActionResult> AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -166,7 +166,7 @@ public class PackageController : ControllerBase
         return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
     }
     [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
-    [HttpPut("{id}/receivetowarehouse")]
+    [HttpPut("{packageid}/receivetowarehouse")]
     public async Task<IActionResult>ReceiveToWarehouse(int packageid)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -185,7 +185,7 @@ public class PackageController : ControllerBase
         return Ok("Csomag a raktárba került!");
     }
     [Authorize(Roles ="Courier,Admin")]
-    [HttpPut("{id}/pickuppackage")]
+    [HttpPut("{packageid}/pickuppackage")]
     public async Task<IActionResult>CourirerPickupPackage(int packageid)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -203,6 +203,24 @@ public class PackageController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok("Csomag sikeresen felvéve!");
     }
+    [Authorize(Roles ="Courier,Admin")]
+    [HttpGet("{courierid}/pickuptasks")]
+    public async Task<IActionResult> CourirerPickUpTasks(int courierId)
+    {
+        var courier = await _context.Users.FindAsync(courierId);
+        if(courier==null)
+        {
+            return NotFound("Futár nem található!");
+        }
+        var result = await _context.Packages.Where(c => c.CourierId == courierId).ToListAsync();
+       
+        return Ok(result switch
+        {
+            null => "Jelenleg nincs kijelölt feladat!",
+            _ =>"A feladatok sikeresen lekérve!"
+        });
+    }
 
-    
+
+
 }
