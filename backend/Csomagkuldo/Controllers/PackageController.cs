@@ -142,5 +142,26 @@ public class PackageController : ControllerBase
         return Ok(result);
 
     }
-   
+    [Authorize(Roles ="WarehouseOperator,Admin")]
+    [HttpPut("/{id}assigncourier")]
+    public async Task<IActionResult>AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
+    {
+        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
+        var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == courierdto.CourierId);
+        if(package==null||courier==null)
+        {
+            return BadRequest("A hozzárendelés nem hajtható végre!");
+        }
+
+        await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+        {
+            Id = packageid,
+            Status = PackageStatus.AssignedToCourier,
+            ChangedAt = DateTime.UtcNow
+        });
+
+        package.CurrentStatus = PackageStatus.AssignedToCourier;
+        await _context.SaveChangesAsync();
+        return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
+    }
 }
