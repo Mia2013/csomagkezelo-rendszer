@@ -13,8 +13,8 @@
         PreBooked,
         InTransitToWarehouse,
         AtWarehouse,
-        AssignedToCourierPickup,
-        AssignedToCourierDeliver,
+        AssignedForPickup,
+        AssignedForDelivery,
         Delivered
     }
 
