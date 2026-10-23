@@ -11,11 +11,15 @@
     public enum PackageStatus
     {
         PreBooked,
+        AssignedForPickup,
         InTransitToWarehouse,
         AtWarehouse,
-        AssignedToCourier,
-        Delivered
+        AssignedForDelivery,
+        OutForDelivery,
+        Delivered,
+        FailedDelivery
     }
+
 
     public enum CourierTaskType
     {
