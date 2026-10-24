@@ -52,6 +52,12 @@ public class PackageApiTests
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         _factory.CheckTestDatabase(db);
         await db.Database.ExecuteSqlRawAsync("DELETE FROM PackageStatuses; DELETE FROM Packages; DELETE FROM AspNetUsers;");
+        db.Users.Add(new User
+        {
+            UserName = "recipient", Email = "recipient@example.test",
+            Address = "Pápa, Minta utca 2."
+        });
+        await db.SaveChangesAsync();
         _client = _factory.CreateClient(new() { BaseAddress = new Uri("https://localhost"), AllowAutoRedirect = false });
     }
 
@@ -102,7 +108,7 @@ public class PackageApiTests
         Assert.AreEqual("09:00-12:00", package.PickupSlot);
         Assert.AreEqual("+36301234567", package.SenderPhoneNumber);
         Assert.IsNull(package.SenderId);
-        Assert.IsNull(package.RecipientId);
+        Assert.AreEqual((await db.Users.SingleAsync(user => user.UserName == "recipient")).Id, package.RecipientId);
         Assert.IsNull(package.CourierId);
         Assert.AreEqual(1, package.StatusHistory.Count);
         var history = package.StatusHistory.Single();
@@ -133,7 +139,7 @@ public class PackageApiTests
         Assert.AreNotEqual(data["trackingNumber"], number);
         Assert.IsNull(package.SenderId);
         Assert.IsNull(package.CourierId);
-        Assert.IsNull(package.RecipientId);
+        Assert.AreEqual((await db.Users.SingleAsync(user => user.UserName == "recipient")).Id, package.RecipientId);
         Assert.AreEqual(PackageStatus.PreBooked, package.CurrentStatus);
         Assert.AreEqual(1, package.StatusHistory.Count);
         Assert.AreEqual(DateTime.UtcNow.Year, package.CreatedAt.Year);
@@ -242,7 +248,7 @@ public class PackageApiTests
         await Create();
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Assert.AreEqual((await db.Users.SingleAsync()).Id, (await db.Packages.SingleAsync()).SenderId);
+        Assert.AreEqual((await db.Users.SingleAsync(user => user.UserName == "bookingtest")).Id, (await db.Packages.SingleAsync()).SenderId);
     }
 
     [DataTestMethod]
