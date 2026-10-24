@@ -12,3 +12,4 @@
 /docs
 /.gitignore
 /docs/Projekt_specifikacio.md
+/tests/Csomagkuldo.Tests/AutomaticDeliveryAssignmentTests.cs
