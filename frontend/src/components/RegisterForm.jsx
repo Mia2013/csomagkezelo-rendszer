@@ -12,6 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Link } from "react-router";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import Send from "@mui/icons-material/Send";
@@ -116,8 +117,9 @@ const RegisterForm = () => {
               fullWidth
               error={!!validationErrors.password}
             >
-              <InputLabel>Jelszó*</InputLabel>
+              <InputLabel htmlFor="register-password">Jelszó*</InputLabel>
               <OutlinedInput
+                id="register-password"
                 inputRef={passwordRef}
                 type={showPassword ? "text" : "password"}
                 label="Jelszó*"
@@ -139,8 +141,11 @@ const RegisterForm = () => {
               fullWidth
               error={!!validationErrors.confirmPassword}
             >
-              <InputLabel>Jelszó újra*</InputLabel>
+              <InputLabel htmlFor="register-confirm-password">
+                Jelszó újra*
+              </InputLabel>
               <OutlinedInput
+                id="register-confirm-password"
                 inputRef={confirmPasswordRef}
                 type={showPassword ? "text" : "password"}
                 label="Jelszó újra*"
@@ -183,6 +188,10 @@ const RegisterForm = () => {
           >
             Fiók létrehozása
           </Button>
+
+          <Typography variant="body2" align="center">
+            Van már fiókod? <Link to="/#belepes">Jelentkezz be!</Link>
+          </Typography>
         </Box>
       </Paper>
     </Container>

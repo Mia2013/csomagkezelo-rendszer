@@ -106,7 +106,7 @@ Minden állapotváltás időbélyeggel bekerül a csomag előzményei közé; eb
 
 | Entitás | Fő mezők |
 | --- | --- |
-| User | Id, UserName, FirstName, LastName, Email, PasswordHash, PhoneNumber, Address, Role (Registered, Courier, WarehouseKeeper, Admin) |
+| User | Id, UserName, FirstName, LastName, Email, PasswordHash, PhoneNumber, Address, Role (Customer, Courier, WarehouseOperator, Admin) |
 | Package | Id, TrackingNumber, SenderId?, SenderName, SenderAddress, RecipientId?, RecipientName, RecipientAddress, RecipientEmail, Size, Weight, Value, PickupDate, PickupSlot, Status, CreatedAt |
 | CourierTask | Id, PackageId, CourierId, TaskType (Pickup, Delivery), Status (Assigned, InProgress, Completed), AssignedAt, CompletedAt |
 | PackageStatusHistory | Id, PackageId, Status, ChangedById, ChangedAt |
