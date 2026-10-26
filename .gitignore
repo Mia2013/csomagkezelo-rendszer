@@ -13,3 +13,14 @@
 /.gitignore
 /docs/Projekt_specifikacio.md
 /tests/Csomagkuldo.Tests/AutomaticDeliveryAssignmentTests.cs
+/tests/Csomagkuldo.Tests/AuthenticationAndUserTests.cs
+/tests/Csomagkuldo.Tests/AutomaticPickupAssignmentTests.cs
+/tests/Csomagkuldo.Tests/CourierCarApiTests.cs
+/tests/Csomagkuldo.Tests/CourierOperationsTests.cs
+/tests/Csomagkuldo.Tests/DeliveryOperationsTests.cs
+/tests/Csomagkuldo.Tests/GlobalErrorHandlingTests.cs
+/tests/Csomagkuldo.Tests/MyPackageApiTests.cs
+/tests/Csomagkuldo.Tests/PackageApiTests.cs
+/tests/Csomagkuldo.Tests/PackageEndpointContractTests.cs
+/tests/Csomagkuldo.Tests/ShippingFeeApiTests.cs
+/tests/Csomagkuldo.Tests/WarehouseOperationsTests.cs
