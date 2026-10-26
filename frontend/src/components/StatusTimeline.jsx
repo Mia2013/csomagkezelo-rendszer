@@ -19,12 +19,33 @@ const statusSteps = [
   },
   { status: "AtWarehouse", name: "Raktárban", icon: <Warehouse /> },
   {
-    status: "AssignedToCourier",
+    // Régi megoldás:
+    // status: "AssignedToCourier",
+    // Új megoldás:
+    status: "AssignedForDelivery",
     name: "Futárhoz rendelve",
     icon: <DeliveryDining />,
   },
   { status: "Delivered", name: "Kézbesítve", icon: <HomeWork /> },
 ];
+
+// A részletes backendállapotokat az öt meglévő lépéshez rendeljük.
+const statusAliases = {
+  AssignedForPickup: "PreBooked",
+  OutForDelivery: "AssignedForDelivery",
+  FailedDelivery: "AssignedForDelivery",
+};
+const statusLabels = {
+  PreBooked: "Előjegyezve",
+  AssignedForPickup: "Felvételre kiosztva",
+  InTransitToWarehouse: "Úton a raktárba",
+  AtWarehouse: "Raktárban",
+  AssignedForDelivery: "Kiszállításra kiosztva",
+  OutForDelivery: "Kiszállítás alatt",
+  Delivered: "Kézbesítve",
+  FailedDelivery: "Sikertelen kézbesítés",
+};
+const stepStatus = (status) => statusAliases[status] || status;
 
 const pop = keyframes`
   0% { transform: scale(0.4); opacity: 0; }
@@ -41,11 +62,20 @@ const formatDate = (date) =>
   dayjs(date).tz("Europe/Budapest").format("MM. DD. HH:mm");
 
 const StatusTimeline = ({ result }) => {
+  // Régi megoldás:
+  // const findEntry = (status) =>
+  //   result?.history?.findLast((item) => item.status === status);
+  //
+  // const currentIndex = result
+  //   ? statusSteps.findIndex((step) => step.status === result.currentStatus)
+  //   : -1;
+  // Új megoldás:
   const findEntry = (status) =>
-    result?.history?.findLast((item) => item.status === status);
+    result?.history?.findLast((item) => item.status === status) ??
+    result?.history?.findLast((item) => stepStatus(item.status) === status);
 
   const currentIndex = result
-    ? statusSteps.findIndex((step) => step.status === result.status)
+    ? statusSteps.findIndex((step) => step.status === stepStatus(result.currentStatus))
     : -1;
 
   const isDelivered = currentIndex === statusSteps.length - 1;
@@ -55,6 +85,11 @@ const StatusTimeline = ({ result }) => {
 
   return (
     <Box sx={{ bgcolor: "rgba(255,255,255,0.10)", borderRadius: 3, p: 2 }}>
+      {result && (
+        <Typography role="status" variant="body2" sx={{ mb: 2 }}>
+          Aktuális állapot: {statusLabels[result.currentStatus] || result.currentStatus}
+        </Typography>
+      )}
       <Box
         component="ol"
         sx={{
@@ -72,6 +107,7 @@ const StatusTimeline = ({ result }) => {
             <Stack
               key={step.status}
               component="li"
+              aria-current={isCurrent ? "step" : undefined}
               spacing={1}
               sx={{ alignItems: "center", textAlign: "center" }}
             >

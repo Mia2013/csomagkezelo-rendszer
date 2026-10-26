@@ -1,4 +1,5 @@
 using Csomagkuldo.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Csomagkuldo.Models
@@ -7,6 +8,7 @@ namespace Csomagkuldo.Models
     {
         public int Id { get; set; }
 
+        [ConcurrencyCheck]
         public int CourierId { get; set; }
 
         public int PackageId { get; set; }
@@ -16,8 +18,13 @@ namespace Csomagkuldo.Models
         public DateTime AssignmentTime { get; set; }
             = DateTime.UtcNow;
 
+        [ConcurrencyCheck]
         public CourierTaskStatus Status { get; set; }
             = CourierTaskStatus.Assigned;
+
+        // Megkezdett feladatnál a raktáros már nem változtathat futárt.
+        [ConcurrencyCheck]
+        public bool IsLocked { get; set; }
 
         [ForeignKey("CourierId")]
         [InverseProperty("CourierTasks")]

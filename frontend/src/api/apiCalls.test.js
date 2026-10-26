@@ -1,7 +1,14 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { getData, instance, postData } from "./apiCalls";
 
-afterEach(() => vi.restoreAllMocks());
+// Régi megoldás:
+// afterEach(() => vi.restoreAllMocks());
+// Új megoldás:
+const originalAdapter = instance.defaults.adapter;
+afterEach(() => {
+  instance.defaults.adapter = originalAdapter;
+  vi.restoreAllMocks();
+});
 
 it("nyilvános kereséshez nem küld tokent", async () => {
   localStorage.setItem("csomagkezelo_token", "expired");
@@ -20,6 +27,11 @@ it("előjegyzéshez elküldi a meglévő tokent", async () => {
 });
 
 it("a backend mezőhibáit megtartja", async () => {
-  vi.spyOn(instance, "post").mockRejectedValue({ response: { status: 400, data: { errors: { PickupDate: ["Túl korai dátum."] } } } });
+  // Régi megoldás:
+  // vi.spyOn(instance, "post").mockRejectedValue({ response: { status: 400, data: { errors: { PickupDate: ["Túl korai dátum."] } } } });
+  // Új megoldás:
+  instance.defaults.adapter = vi.fn().mockRejectedValue({
+    response: { status: 400, data: { errors: { PickupDate: ["Túl korai dátum."] } } },
+  });
   await expect(postData("Package", {})).rejects.toMatchObject({ status: 400, errors: { pickupDate: "Túl korai dátum." } });
 });

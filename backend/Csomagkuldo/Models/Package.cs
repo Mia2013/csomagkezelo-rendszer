@@ -1,4 +1,5 @@
 using Csomagkuldo.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Csomagkuldo.Models
@@ -21,6 +22,12 @@ namespace Csomagkuldo.Models
 
         public string Size { get; set; } = string.Empty;
 
+        public bool IsPaid { get; set; } = false; //0-még nem fizetett, 1-kifizetve
+
+        // Régi csomagoknál a díj nem ismert; új feladásnál mindkettőt kitöltjük. Ezt még lehet veriálni kell majd.
+        public int? ShippingFeeId { get; set; }
+        public int? ShippingCost { get; set; }
+
         // vendég feladó
         public int? SenderId { get; set; }
 
@@ -35,15 +42,19 @@ namespace Csomagkuldo.Models
 
         public string RecipientAddress { get; set; } = string.Empty;
 
+        [ConcurrencyCheck]
         public PackageStatus CurrentStatus { get; set; }
             = PackageStatus.PreBooked;
 
         // új csomag
+        [ConcurrencyCheck]
         public int? CourierId { get; set; }
 
         public DateTime PickupDate { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public ShippingFee? ShippingFee { get; set; }
 
         [ForeignKey("SenderId")]
         [InverseProperty("SentPackages")]

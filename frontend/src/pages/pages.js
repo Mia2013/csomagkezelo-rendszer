@@ -1,10 +1,19 @@
 import { ALL_ROLES, ROLES } from "../constants/constants.js";
 import Home from "./Home.jsx";
 import Register from "./Register.jsx";
+import Warehouse from "./Warehouse.jsx";
 
 import CreatePackage from "./CreatePackage.jsx";
 
 export const allPages = [
+  {
+    id: "warehouse",
+    name: "Raktár",
+    path: "/raktar",
+    component: Warehouse,
+    showInNavbar: true,
+    roles: [ROLES.WAREHOUSE_OPERATOR, ROLES.ADMIN],
+  },
   {
     id: "home",
     name: "Kezdőlap",

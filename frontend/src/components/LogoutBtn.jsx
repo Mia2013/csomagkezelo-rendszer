@@ -1,11 +1,20 @@
 import { Button } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
-import { useAuth } from "../provider/AuthProvider";
+// Régi megoldás:
+// import { useAuth } from "../provider/AuthProvider";
+// Új megoldás:
+import { useAuth } from "../provider/AuthContext";
 
 const LogoutBtn = () => {
-    const { logOut, isAuthenticated } = useAuth();
+    // Régi megoldás:
+    // const { logOut, isAuthenticated } = useAuth();
+    // Új megoldás:
+    const { logOut, hasSession } = useAuth();
 
-    if (isAuthenticated) {
+    // Régi megoldás:
+    // if (isAuthenticated) {
+    // Új megoldás:
+    if (hasSession) {
         return (
             <Button
                 variant="text"

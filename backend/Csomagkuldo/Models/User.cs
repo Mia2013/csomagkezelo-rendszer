@@ -13,6 +13,10 @@ namespace Csomagkuldo.Models
 
         public UserRole Role { get; set; } = UserRole.Customer;
 
+        public bool IsActive { get; set; } = true;
+
+        public CourierCar? CourierCar { get; set; }
+
         public List<Package> SentPackages { get; set; }
             = new List<Package>();
 

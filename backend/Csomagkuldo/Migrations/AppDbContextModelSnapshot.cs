@@ -22,6 +22,55 @@ namespace Csomagkuldo.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Csomagkuldo.Models.CourierCar", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CourierId")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
+                    b.Property<string>("LicensePlate")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Manufacturer")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourierId")
+                        .IsUnique()
+                        .HasFilter("[CourierId] IS NOT NULL");
+
+                    b.HasIndex("LicensePlate")
+                        .IsUnique();
+
+                    b.ToTable("CourierCars", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourierCars_Capacity", "[Capacity] > 0");
+                        });
+                });
+
             modelBuilder.Entity("Csomagkuldo.Models.CourierTask", b =>
                 {
                     b.Property<int>("Id")
@@ -34,12 +83,18 @@ namespace Csomagkuldo.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("CourierId")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsLocked")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bit");
 
                     b.Property<int>("PackageId")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -65,14 +120,19 @@ namespace Csomagkuldo.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CourierId")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CurrentStatus")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("PickupDate")
                         .HasColumnType("datetime2");
@@ -115,6 +175,12 @@ namespace Csomagkuldo.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<int?>("ShippingCost")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ShippingFeeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Size")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -138,10 +204,15 @@ namespace Csomagkuldo.Migrations
 
                     b.HasIndex("SenderId");
 
+                    b.HasIndex("ShippingFeeId");
+
                     b.HasIndex("TrackingNumber")
                         .IsUnique();
 
-                    b.ToTable("Packages");
+                    b.ToTable("Packages", t =>
+                        {
+                            t.HasCheckConstraint("CK_Packages_ShippingCost", "[ShippingCost] IS NULL OR [ShippingCost] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("Csomagkuldo.Models.PackageStatusHistory", b =>
@@ -174,6 +245,72 @@ namespace Csomagkuldo.Migrations
                     b.ToTable("PackageStatuses");
                 });
 
+            modelBuilder.Entity("Csomagkuldo.Models.ShippingFee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("MaxSize")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int>("RegisteredPrice")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("UnregisteredPrice")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaxSize")
+                        .IsUnique();
+
+                    b.HasIndex("Type")
+                        .IsUnique();
+
+                    b.ToTable("ShippingFees", t =>
+                        {
+                            t.HasCheckConstraint("CK_ShippingFees_MaxSize", "[MaxSize] IN ('S', 'M', 'L')");
+
+                            t.HasCheckConstraint("CK_ShippingFees_Prices", "[RegisteredPrice] >= 0 AND [UnregisteredPrice] >= 0");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            MaxSize = "S",
+                            RegisteredPrice = 1000,
+                            Type = "Small",
+                            UnregisteredPrice = 1000
+                        },
+                        new
+                        {
+                            Id = 2,
+                            MaxSize = "M",
+                            RegisteredPrice = 2000,
+                            Type = "Medium",
+                            UnregisteredPrice = 2000
+                        },
+                        new
+                        {
+                            Id = 3,
+                            MaxSize = "L",
+                            RegisteredPrice = 4000,
+                            Type = "Large",
+                            UnregisteredPrice = 4000
+                        });
+                });
+
             modelBuilder.Entity("Csomagkuldo.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -203,6 +340,9 @@ namespace Csomagkuldo.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -266,10 +406,16 @@ namespace Csomagkuldo.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("Capacity")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("PackageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UsedCapacity")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -341,6 +487,16 @@ namespace Csomagkuldo.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Csomagkuldo.Models.CourierCar", b =>
+                {
+                    b.HasOne("Csomagkuldo.Models.User", "Courier")
+                        .WithOne("CourierCar")
+                        .HasForeignKey("Csomagkuldo.Models.CourierCar", "CourierId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Courier");
+                });
+
             modelBuilder.Entity("Csomagkuldo.Models.CourierTask", b =>
                 {
                     b.HasOne("Csomagkuldo.Models.User", "Courier")
@@ -374,11 +530,18 @@ namespace Csomagkuldo.Migrations
                         .WithMany("SentPackages")
                         .HasForeignKey("SenderId");
 
+                    b.HasOne("Csomagkuldo.Models.ShippingFee", "ShippingFee")
+                        .WithMany("Packages")
+                        .HasForeignKey("ShippingFeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Courier");
 
                     b.Navigation("Recipient");
 
                     b.Navigation("Sender");
+
+                    b.Navigation("ShippingFee");
                 });
 
             modelBuilder.Entity("Csomagkuldo.Models.PackageStatusHistory", b =>
@@ -432,9 +595,16 @@ namespace Csomagkuldo.Migrations
                     b.Navigation("StatusHistory");
                 });
 
+            modelBuilder.Entity("Csomagkuldo.Models.ShippingFee", b =>
+                {
+                    b.Navigation("Packages");
+                });
+
             modelBuilder.Entity("Csomagkuldo.Models.User", b =>
                 {
                     b.Navigation("AssignedPackages");
+
+                    b.Navigation("CourierCar");
 
                     b.Navigation("CourierTasks");
 

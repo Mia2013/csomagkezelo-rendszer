@@ -10,42 +10,78 @@ const TrackPackageForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const trackingNumber = searchParams.get("trackingNumber") || "";
 
-  const [input, setInput] = useState(trackingNumber);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const trackPackage = async (number) => {
-    setBusy(true);
-    setResult(null);
-    setError("");
-    try {
-      setResult(
-        await getData(endpoints.trackPackage, { trackingNumber: number }, true),
-      );
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setBusy(false);
-    }
-  };
+  // Régi megoldás:
+  // const [input, setInput] = useState(trackingNumber);
+  // const [result, setResult] = useState(null);
+  // const [error, setError] = useState("");
+  // const [busy, setBusy] = useState(false);
+  //
+  // const trackPackage = async (number) => {
+  //   setBusy(true);
+  //   setResult(null);
+  //   setError("");
+  //   try {
+  //     setResult(
+  //       await getData(endpoints.trackPackage, { trackingNumber: number }, true),
+  //     );
+  //   } catch (error) {
+  //     setError(error.message);
+  //   } finally {
+  //     setBusy(false);
+  //   }
+  // };
+  //
+  // useEffect(() => {
+  //   if (trackingNumber) {
+  //     trackPackage(trackingNumber);
+  //   }
+  // }, []);
+  //
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //
+  //   const number = input.trim();
+  //   if (!number) {
+  //     setError("Add meg a csomagazonosítót!");
+  //     return;
+  //   }
+  //   setSearchParams({ trackingNumber: number });
+  //   trackPackage(number);
+  // };
+  // Új megoldás:
+  const [input, setInput] = useState(null);
+  const [requestId, setRequestId] = useState(0);
+  const [response, setResponse] = useState(null);
+  const [inputError, setInputError] = useState("");
+  const busy = !!trackingNumber &&
+    (response?.number !== trackingNumber || response?.requestId !== requestId);
+  const result = trackingNumber && !busy ? response?.result : null;
+  const error = inputError || (trackingNumber && !busy ? response?.error : "");
 
   useEffect(() => {
-    if (trackingNumber) {
-      trackPackage(trackingNumber);
-    }
-  }, []);
+    if (!trackingNumber) return;
+    let cancelled = false;
+    getData(endpoints.trackPackage, { trackingNumber }, true)
+      .then((result) => {
+        if (!cancelled) setResponse({ number: trackingNumber, requestId, result, error: "" });
+      })
+      .catch((error) => {
+        if (!cancelled) setResponse({ number: trackingNumber, requestId, result: null, error: error.message });
+      });
+    return () => { cancelled = true; };
+  }, [trackingNumber, requestId]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const number = input.trim();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const number = (input ?? trackingNumber).trim();
     if (!number) {
-      setError("Add meg a csomagazonosítót!");
+      setInputError("Add meg a csomagazonosítót!");
       return;
     }
-    setSearchParams({ trackingNumber: number });
-    trackPackage(number);
+    setInputError("");
+    setInput(null);
+    if (number === trackingNumber) setRequestId((value) => value + 1);
+    else setSearchParams({ trackingNumber: number });
   };
 
   return (
@@ -60,7 +96,10 @@ const TrackPackageForm = () => {
           fullWidth
           size="small"
           placeholder="Csomagazonosító"
-          value={input}
+          // Régi megoldás:
+          // value={input}
+          // Új megoldás:
+          value={input ?? trackingNumber}
           onChange={(e) => setInput(e.target.value)}
           disabled={busy}
           slotProps={{ htmlInput: { "aria-label": "Csomagazonosító" } }}

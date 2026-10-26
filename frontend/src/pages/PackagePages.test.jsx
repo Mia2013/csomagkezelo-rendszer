@@ -237,7 +237,7 @@ describe("Nyilvános követés", () => {
   it("a linkből automatikusan lekérdez és magyar státuszt mutat", async () => {
     getData.mockResolvedValue({
       trackingNumber: number,
-      status: "PreBooked",
+      currentStatus: "PreBooked",
       changedAt: "2026-10-03T10:00:00Z",
       history: [{ status: "PreBooked", changedAt: "2026-10-03T10:00:00Z" }],
     });
@@ -260,7 +260,7 @@ describe("Nyilvános követés", () => {
   it("az idővonalon csak a megtörtént állapotok kapnak időpontot", async () => {
     getData.mockResolvedValue({
       trackingNumber: number,
-      status: "AtWarehouse",
+      currentStatus: "AtWarehouse",
       changedAt: "2026-10-05T08:30:00Z",
       history: [
         { status: "PreBooked", changedAt: "2026-10-03T10:00:00Z" },

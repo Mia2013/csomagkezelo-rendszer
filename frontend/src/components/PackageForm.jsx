@@ -59,25 +59,46 @@ const PackageForm = () => {
   const [result, setResult] = useState(null);
   const sendingRef = useRef(false);
 
-  const getUserById = async (id) => {
-    try {
-      const profile = await getData(`${endpoints.getUserById}/${id}`);
-      setData((current) => ({
-        ...current,
-        senderName: `${profile.lastName} ${profile.firstName}`,
-        senderAddress: profile.address || "",
-        senderPhoneNumber: profile.phoneNumber || "",
-      }));
-    } catch {
-      setError("A feladó adatait nem sikerült betölteni, töltsd ki kézzel!");
-    }
-  };
-
+  // Régi megoldás:
+  // const getUserById = async (id) => {
+  //   try {
+  //     const profile = await getData(`${endpoints.getUserById}/${id}`);
+  //     setData((current) => ({
+  //       ...current,
+  //       senderName: `${profile.lastName} ${profile.firstName}`,
+  //       senderAddress: profile.address || "",
+  //       senderPhoneNumber: profile.phoneNumber || "",
+  //     }));
+  //   } catch {
+  //     setError("A feladó adatait nem sikerült betölteni, töltsd ki kézzel!");
+  //   }
+  // };
+  //
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     getUserById(user.id);
+  //   }
+  // }, [isAuthenticated, user?.id]);
+  // Új megoldás:
+  const userId = user?.id;
   useEffect(() => {
-    if (isAuthenticated) {
-      getUserById(user.id);
-    }
-  }, [isAuthenticated, user?.id]);
+    if (!isAuthenticated || !userId) return;
+    let cancelled = false;
+    getData(endpoints.getUserById + "/" + userId)
+      .then((profile) => {
+        if (cancelled) return;
+        setData((current) => ({
+          ...current,
+          senderName: (profile.lastName + " " + profile.firstName).trim(),
+          senderAddress: profile.address || "",
+          senderPhoneNumber: profile.phoneNumber || "",
+        }));
+      })
+      .catch(() => {
+        if (!cancelled) setError("A feladó adatait nem sikerült betölteni, töltsd ki kézzel!");
+      });
+    return () => { cancelled = true; };
+  }, [isAuthenticated, userId]);
 
   const handleChange = (e) =>
     setData({ ...data, [e.target.name]: e.target.value });

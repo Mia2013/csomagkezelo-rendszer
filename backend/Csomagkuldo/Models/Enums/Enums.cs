@@ -21,6 +21,13 @@
     }
 
 
+    public enum ShippingFeeType
+    {
+        Small,
+        Medium,
+        Large
+    }
+
     public enum CourierTaskType
     {
         Pickup = 0,

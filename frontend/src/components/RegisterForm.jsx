@@ -17,7 +17,10 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 import Send from "@mui/icons-material/Send";
 
-import { useAuth } from "../provider/AuthProvider";
+// Régi megoldás:
+// import { useAuth } from "../provider/AuthProvider";
+// Új megoldás:
+import { useAuth } from "../provider/AuthContext";
 import ValidationCaption from "./ValidationCaption";
 
 const RegisterForm = () => {
