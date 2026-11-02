@@ -10,45 +10,6 @@ const TrackPackageForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const trackingNumber = searchParams.get("trackingNumber") || "";
 
-  // Régi megoldás:
-  // const [input, setInput] = useState(trackingNumber);
-  // const [result, setResult] = useState(null);
-  // const [error, setError] = useState("");
-  // const [busy, setBusy] = useState(false);
-  //
-  // const trackPackage = async (number) => {
-  //   setBusy(true);
-  //   setResult(null);
-  //   setError("");
-  //   try {
-  //     setResult(
-  //       await getData(endpoints.trackPackage, { trackingNumber: number }, true),
-  //     );
-  //   } catch (error) {
-  //     setError(error.message);
-  //   } finally {
-  //     setBusy(false);
-  //   }
-  // };
-  //
-  // useEffect(() => {
-  //   if (trackingNumber) {
-  //     trackPackage(trackingNumber);
-  //   }
-  // }, []);
-  //
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //
-  //   const number = input.trim();
-  //   if (!number) {
-  //     setError("Add meg a csomagazonosítót!");
-  //     return;
-  //   }
-  //   setSearchParams({ trackingNumber: number });
-  //   trackPackage(number);
-  // };
-  // Új megoldás:
   const [input, setInput] = useState(null);
   const [requestId, setRequestId] = useState(0);
   const [response, setResponse] = useState(null);
@@ -96,9 +57,6 @@ const TrackPackageForm = () => {
           fullWidth
           size="small"
           placeholder="Csomagazonosító"
-          // Régi megoldás:
-          // value={input}
-          // Új megoldás:
           value={input ?? trackingNumber}
           onChange={(e) => setInput(e.target.value)}
           disabled={busy}

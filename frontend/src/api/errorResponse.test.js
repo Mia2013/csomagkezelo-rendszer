@@ -1,32 +1,12 @@
 import { afterEach, expect, it, vi } from "vitest";
-// Régi megoldás:
-// import { instance, putData } from "./apiCalls";
-// Új megoldás:
 import { deleteData, getData, instance, postData, putData } from "./apiCalls";
 
-// Régi megoldás:
-// afterEach(() => vi.restoreAllMocks());
-// Új megoldás:
 const originalAdapter = instance.defaults.adapter;
 afterEach(() => {
   instance.defaults.adapter = originalAdapter;
   vi.restoreAllMocks();
 });
 
-// Régi megoldás:
-// it.each([409, 500])("a központi %s ProblemDetails-válaszból a backend üzenetét és státuszát adja tovább", async (status) => {
-//   const detail = status === 409
-//     ? "Az adatok közben megváltoztak. Frissítsd a listát!"
-//     : "A művelet nem sikerült. Próbáld újra később!";
-//   vi.spyOn(instance, "put").mockRejectedValue({
-//     response: { status, data: { status, title: "Hiba", detail } },
-//   });
-//
-//   await expect(putData("Package/1/assignfordelivery", { courierId: 10 }))
-//     .rejects.toMatchObject({ status, message: detail, errors: {} });
-// });
-// Új megoldás:
-// Az adaptert helyettesítjük, így az Axios interceptora is lefut.
 const requests = [
   { method: "GET", call: () => getData("Package/track", { trackingNumber: "abc" }) },
   { method: "POST", call: () => postData("Package", { size: "M" }) },

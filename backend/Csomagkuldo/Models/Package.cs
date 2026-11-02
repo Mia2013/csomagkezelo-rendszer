@@ -10,7 +10,6 @@ namespace Csomagkuldo.Models
 
         public string TrackingNumber { get; set; } = string.Empty;
 
-        // Régi csomagoknál ezek az új adatok még hiányozhatnak.
         public string? SenderPhoneNumber { get; set; }
         public string? RecipientPhoneNumber { get; set; }
         public string? RecipientEmail { get; set; }
@@ -22,20 +21,17 @@ namespace Csomagkuldo.Models
 
         public string Size { get; set; } = string.Empty;
 
-        public bool IsPaid { get; set; } = false; //0-még nem fizetett, 1-kifizetve
+        public bool IsPaid { get; set; } = false;
 
-        // Régi csomagoknál a díj nem ismert; új feladásnál mindkettőt kitöltjük. Ezt még lehet veriálni kell majd.
         public int? ShippingFeeId { get; set; }
         public int? ShippingCost { get; set; }
 
-        // vendég feladó
         public int? SenderId { get; set; }
 
         public string SenderName { get; set; } = string.Empty;
 
         public string SenderAddress { get; set; } = string.Empty;
 
-        // vendég címzett
         public int? RecipientId { get; set; }
 
         public string RecipientName { get; set; } = string.Empty;
@@ -46,7 +42,6 @@ namespace Csomagkuldo.Models
         public PackageStatus CurrentStatus { get; set; }
             = PackageStatus.PreBooked;
 
-        // új csomag
         [ConcurrencyCheck]
         public int? CourierId { get; set; }
 

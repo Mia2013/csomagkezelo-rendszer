@@ -21,13 +21,6 @@ public class PackageController : ControllerBase
     private readonly AppDbContext _context;
     private readonly PackageService _packageService;
 
-    // Régi megoldás:
-    // public PackageController(AppDbContext context, IConfiguration configuration)
-    // {
-    //     _context = context;
-    //     _warehouseCapacity = configuration.GetValue<int>("Warehouse:Capacity");
-    // }
-    // Új megoldás:
     public PackageController(AppDbContext context, PackageService packageService)
     {
         _context = context;
@@ -48,7 +41,6 @@ public class PackageController : ControllerBase
         }
 
         int? senderId = null;
-        // A hibás tokennel érkező kérést nem mentjük el vendégfeladásként.
         if (Request.Headers.ContainsKey("Authorization"))
         {
             var authentication = await HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
@@ -61,17 +53,16 @@ public class PackageController : ControllerBase
             senderId = userId;
         }
 
-        // A címzett a már létező felhasználó e-mailje és címe alapján azonosítható.
         string recipientEmail = dto.RecipientEmail!.Trim().ToUpperInvariant();
         string recipientAddress = dto.RecipientAddress!.Trim().ToUpperInvariant();
         var recipientIds = await _context.Users
             .Where(user => user.Email != null && user.Email.Trim().ToUpper() == recipientEmail &&
                 user.Address.Trim().ToUpper() == recipientAddress)
             .Select(user => user.Id).Take(2).ToListAsync();
-        if (recipientIds.Count != 1)
-            return BadRequest("A címzett e-mail-címével és címével nem található egyértelmű felhasználó. Ellenőrizd az adatokat; a címzettnek már regisztráltnak kell lennie.");
+        if (recipientIds.Count > 1)
+            return BadRequest("A címzett e-mail-címével és címével több felhasználó található. Ellenőrizd az adatokat!");
+        int? recipientId = recipientIds.Count == 1 ? recipientIds[0] : null;
 
-        // Ütközés után a teljes előjegyzést újraszámoljuk, legfeljebb háromszor.
         for (int attempt = 0; attempt < 3; attempt++)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -84,7 +75,7 @@ public class PackageController : ControllerBase
                 {
                     TrackingNumber = Guid.NewGuid().ToString(),
                     SenderId = senderId,
-                    RecipientId = recipientIds[0],
+                    RecipientId = recipientId,
                     SenderName = dto.SenderName!.Trim(),
                     SenderAddress = dto.SenderAddress!.Trim(),
                     SenderPhoneNumber = dto.SenderPhoneNumber!.Trim(),
@@ -116,20 +107,6 @@ public class PackageController : ControllerBase
                     await CourierCapacityHelper.GetAssignmentError(_context, courierId.Value, package.Size) == null)
                 {
                     DateTime assignedAt = DateTime.UtcNow;
-                    // Régi megoldás:
-                    // package.CourierId = courierId;
-                    // package.CourierTasks.Add(new CourierTask
-                    // {
-                    //     CourierId = courierId.Value,
-                    //     TaskType = CourierTaskType.Pickup,
-                    //     Status = CourierTaskStatus.Assigned,
-                    //     AssignmentTime = assignedAt
-                    // });
-                    // SetPackageStatus(package, PackageStatus.AssignedForPickup, courierId.Value, assignedAt);
-                    // Új megoldás:
-                    // Régi megoldás:
-                    // AssignPackage(package, courierId.Value, CourierTaskType.Pickup, assignedAt);
-                    // Új megoldás:
                     _packageService.AssignPackage(package, courierId.Value, CourierTaskType.Pickup, assignedAt);
                 }
 
@@ -146,7 +123,6 @@ public class PackageController : ControllerBase
             }
             catch (Exception exception) when (exception.GetBaseException() is SqlException sql && sql.Number == 1205)
             {
-                // A visszagörgetett próbálkozás objektumait nem használjuk újra.
                 _context.ChangeTracker.Clear();
             }
         }
@@ -179,7 +155,6 @@ public class PackageController : ControllerBase
             .Select(item => new PackageStatusDTO
             {
                 Status = item.Status,
-                // SQL Server a DateTime Kind értékét nem tárolja; az eseményidők UTC-ben vannak.
                 ChangedAt = DateTime.SpecifyKind(item.ChangedAt, DateTimeKind.Utc)
             })
             .ToListAsync();
@@ -254,7 +229,6 @@ public class PackageController : ControllerBase
 
     private Task<List<PackageDTO>> GetMyPackageList(IQueryable<Package> packages, bool history)
     {
-        // A meghiúsult kézbesítés még folyamatban lévő csomagügy.
         if (history) packages = packages.Where(package => package.CurrentStatus == PackageStatus.Delivered);
         else packages = packages.Where(package => package.CurrentStatus != PackageStatus.Delivered);
 

@@ -1,9 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { getData, instance, postData } from "./apiCalls";
 
-// Régi megoldás:
-// afterEach(() => vi.restoreAllMocks());
-// Új megoldás:
 const originalAdapter = instance.defaults.adapter;
 afterEach(() => {
   instance.defaults.adapter = originalAdapter;
@@ -27,9 +24,6 @@ it("előjegyzéshez elküldi a meglévő tokent", async () => {
 });
 
 it("a backend mezőhibáit megtartja", async () => {
-  // Régi megoldás:
-  // vi.spyOn(instance, "post").mockRejectedValue({ response: { status: 400, data: { errors: { PickupDate: ["Túl korai dátum."] } } } });
-  // Új megoldás:
   instance.defaults.adapter = vi.fn().mockRejectedValue({
     response: { status: 400, data: { errors: { PickupDate: ["Túl korai dátum."] } } },
   });

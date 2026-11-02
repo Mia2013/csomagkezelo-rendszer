@@ -53,7 +53,6 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        // A közös DTO-ból csak a kitöltött mezőket küldjük vissza.
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy =>
@@ -68,7 +67,6 @@ app.UseExceptionHandler(errorApp =>
     {
         var error = context.Features.Get<IExceptionHandlerFeature>()?.Error;
         var sqlError = error?.GetBaseException() as SqlException;
-        // 1205: holtpont; 2601/2627: ismétlődő egyedi adat.
         bool conflict = error is DbUpdateConcurrencyException ||
             (sqlError != null && (sqlError.Number == 1205 || sqlError.Number == 2601 || sqlError.Number == 2627));
 
@@ -91,5 +89,4 @@ app.UseAuthorization();
 app.MapControllers();
 app.Run();
 
-// Az integrációs tesztek innen indítják az alkalmazást.
 public partial class Program { }

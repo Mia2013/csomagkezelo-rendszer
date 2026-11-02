@@ -1,7 +1,7 @@
 @api = https://localhost:7259/api
 @trackingNumber = 77011983-e714-47b2-9bbb-cb3058c81a2e
 
-### Vendég előjegyzés. A felvételi nap legyen későbbi a mai budapesti dátumnál.
+###
 POST {{api}}/Package
 Content-Type: application/json
 
@@ -20,9 +20,9 @@ Content-Type: application/json
   "pickupSlot": "09:00-12:00"
 }
 
-### A POST válaszából másold a trackingNumber értékét a fenti változóba.
+###
 GET {{api}}/Package/track?trackingNumber={{trackingNumber}}
 Accept: application/json
 
-### Hibás UUID: 400
+###
 GET {{api}}/Package/track?trackingNumber=hibas

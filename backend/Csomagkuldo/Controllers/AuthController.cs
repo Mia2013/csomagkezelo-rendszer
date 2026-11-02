@@ -32,41 +32,22 @@ namespace Csomagkuldo.Controllers
             string email = dto.Email.Trim();
             if (await _context.Users.AnyAsync(user => user.UserName == userName))
                 return BadRequest("Ez a felhasználónév már létezik!");
-            // Régi megoldás:
-            // var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
-            // if(user!=null)
-            // {
-            //     return BadRequest("Ez az Email cím már létezik!");
-            // }
-            // Új megoldás:
-            // Régi megoldás:
-            // if (await _context.Users.AnyAsync(user => user.Email == dto.Email))
-            // Új megoldás:
             if (await _context.Users.AnyAsync(user => user.Email == email))
             {
                 return BadRequest("Ez az Email cím már létezik!");
             }
             User newuser = new()
             {
-                // Régi megoldás:
-                // UserName = dto.UserName ?? string.Empty,
-                // Új megoldás:
                 UserName = userName,
                 NormalizedUserName = userName.ToUpperInvariant(),
                 LastName = dto.LastName ?? string.Empty,
                 FirstName = dto.FirstName ?? string.Empty,
-                // Régi megoldás:
-                // Email = dto.Email ?? string.Empty,
-                // Új megoldás:
                 Email = email,
                 NormalizedEmail = email.ToUpperInvariant(),
                 Address = dto.Address ?? string.Empty,
                 PhoneNumber = dto.PhoneNumber ?? string.Empty
             };
             newuser.PasswordHash = passwordhaser.HashPassword(newuser, dto.Password);
-            // Régi megoldás:
-            // await _context.Users.AddAsync(newuser);
-            // Új megoldás:
             _context.Users.Add(newuser);
             await _context.SaveChangesAsync();
             return Ok("Sikeres regisztráció!");
@@ -74,9 +55,6 @@ namespace Csomagkuldo.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO dto)
         {
-            // Régi megoldás:
-            // var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == dto.UserName);
-            // Új megoldás:
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == dto.UserName.Trim());
             if(user==null)
             {

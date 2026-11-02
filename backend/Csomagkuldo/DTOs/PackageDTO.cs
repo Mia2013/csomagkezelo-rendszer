@@ -3,7 +3,6 @@ using Csomagkuldo.Enums;
 
 namespace Csomagkuldo.DTOs;
 
-// A szükséges mezőket mindig az adott művelet ellenőrzi.
 public class PackageDTO
 {
     public int? Id { get; set; }

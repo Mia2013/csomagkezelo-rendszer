@@ -11,7 +11,6 @@ namespace Csomagkuldo.Data
         {
         }
 
-        // Users táblát már tartalmazza az "IdentityUserContext<User, int>"
         public DbSet<CourierTask> CourierTasks { get; set; } = null!;
         public DbSet<Package> Packages { get; set; } = null!;
         public DbSet<PackageStatusHistory> PackageStatuses { get; set; } = null!;
@@ -68,7 +67,6 @@ namespace Csomagkuldo.Data
                 .HasForeignKey<CourierCar>(car => car.CourierId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // A futár feladatai maradjanak meg törlési kísérletnél.
             modelBuilder.Entity<CourierTask>()
                 .HasOne(task => task.Courier)
                 .WithMany(user => user.CourierTasks)

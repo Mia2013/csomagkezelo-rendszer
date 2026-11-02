@@ -1,4 +1,3 @@
 <Solution>
-  <Project Path="../../tests/Csomagkuldo.Tests/Csomagkuldo.Tests.csproj" />
   <Project Path="Csomagkuldo.csproj" />
 </Solution>

@@ -38,7 +38,6 @@ public class WarehouseController : ControllerBase
         return Ok(result);
     }
 
-    // A kiosztott csomag is a raktárban marad a kiszállítás megkezdéséig.
     [Authorize(Roles = "WarehouseOperator,Admin")]
     [HttpGet("warehouse")]
     public async Task<IActionResult> GetWarehousePackages()
@@ -75,30 +74,12 @@ public class WarehouseController : ControllerBase
         return Ok(await GetWarehousePackageList(packages));
     }
 
-    // A raktáros felvételi feladatot rendel a futárhoz.
     [Authorize(Roles = "WarehouseOperator,Admin")]
     [HttpPut("{packageid}/assignforpickup")]
     public async Task<IActionResult> AssignCourierToPackage(int packageid, [FromBody] PackageDTO courierdto)
     {
         if (courierdto.CourierId == null) return BadRequest("Adj meg egy érvényes futárazonosítót!");
         await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-        // Régi megoldás a közös lekérő előtt:
-        // // Régi megoldás:
-        // // var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-        // // Új megoldás:
-        // var package = await _context.Packages.FindAsync(packageid);
-        // // Régi megoldás:
-        // // var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == courierdto.CourierId);
-        // // Új megoldás:
-        // var courier = await _context.Users.FindAsync(courierdto.CourierId);
-        //
-        // if (package == null) return NotFound("A csomag nem található!");
-        // if (courier == null) return NotFound("A futár nem található!");
-        // Új megoldás:
-        // Régi megoldás:
-        // var result = await GetPackageAndCourier(packageid, courierdto.CourierId.Value);
-        // if (result.Error != null) return result.Error;
-        // Új megoldás:
         var result = await _packageService.GetPackageAndCourier(packageid, courierdto.CourierId.Value);
         if (result.Error != null) return NotFound(result.Error);
 
@@ -126,22 +107,6 @@ public class WarehouseController : ControllerBase
 
         DateTime now = DateTime.UtcNow;
 
-        // Régi megoldás:
-        // await _context.CourierTasks.AddAsync(new CourierTask
-        // {
-        //     PackageId = packageid,
-        //     TaskType = CourierTaskType.Pickup,
-        //     Status = CourierTaskStatus.Assigned,
-        //     CourierId = courier.Id,
-        //     AssignmentTime = now
-        // });
-        //
-        // package.CourierId = courier.Id;
-        // SetPackageStatus(package, PackageStatus.AssignedForPickup, courier.Id, now);
-        // Új megoldás:
-        // Régi megoldás:
-        // AssignPackage(package, courier.Id, CourierTaskType.Pickup, now);
-        // Új megoldás:
         _packageService.AssignPackage(package, courier.Id, CourierTaskType.Pickup, now);
 
         await _context.SaveChangesAsync();
@@ -151,24 +116,12 @@ public class WarehouseController : ControllerBase
         return Ok("A futárt sikeresen hozzárendeltük a csomag felvételéhez.");
     }
 
-    // Indulás előtt a meglévő feladat futárja cserélhető, új feladat nélkül.
     [Authorize(Roles = "WarehouseOperator,Admin")]
     [HttpPut("{packageid}/reassigncourier")]
     public async Task<IActionResult> ReassignCourier(int packageid, [FromBody] PackageDTO dto)
     {
         if (dto.CourierId == null) return BadRequest("Adj meg egy érvényes futárazonosítót!");
         await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-        // Régi megoldás a közös lekérő előtt:
-        // var package = await _context.Packages.FindAsync(packageid);
-        // var courier = await _context.Users.FindAsync(dto.CourierId);
-        //
-        // if (package == null) return NotFound("A csomag nem található!");
-        // if (courier == null) return NotFound("A futár nem található!");
-        // Új megoldás:
-        // Régi megoldás:
-        // var result = await GetPackageAndCourier(packageid, dto.CourierId.Value);
-        // if (result.Error != null) return result.Error;
-        // Új megoldás:
         var result = await _packageService.GetPackageAndCourier(packageid, dto.CourierId.Value);
         if (result.Error != null) return NotFound(result.Error);
 
@@ -205,9 +158,6 @@ public class WarehouseController : ControllerBase
         task.CourierId = courier.Id;
         task.AssignmentTime = now;
         package.CourierId = courier.Id;
-        // Régi megoldás:
-        // SetPackageStatus(package, package.CurrentStatus, courier.Id, now);
-        // Új megoldás:
         _packageService.SetPackageStatus(package, package.CurrentStatus, courier.Id, now);
 
         await _context.SaveChangesAsync();
@@ -217,39 +167,13 @@ public class WarehouseController : ControllerBase
         return Ok("A futárt sikeresen módosítottuk.");
     }
 
-    // A raktáros veszi át a futártól a korábban felvett csomagot.
     [Authorize(Roles = "Admin,WarehouseOperator")]
     [HttpPut("{packageid}/receivetowarehouse")]
     public async Task<IActionResult> ReceiveToWarehouse(int packageid, [FromBody] PackageDTO dto)
     {
         if (dto.CourierId == null) return BadRequest("Adj meg egy érvényes futárazonosítót!");
         if (_warehouseCapacity <= 0) return Problem("A raktár kapacitása nincs megfelelően beállítva.");
-        // A készletszámolás és a bevételezés egymással párhuzamosan sem válhat szét.
         await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-        // Régi megoldás a közös lekérő előtt:
-        // // Régi megoldás:
-        // // var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-        // // Új megoldás:
-        // var package = await _context.Packages.FindAsync(packageid);
-        // // Régi megoldás:
-        // // var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
-        // // Új megoldás:
-        // var courier = await _context.Users.FindAsync(dto.CourierId);
-        //
-        // if (package == null)
-        // {
-        //     return NotFound("A csomag nem található!");
-        // }
-        //
-        // if (courier == null)
-        // {
-        //     return NotFound("A futár nem található!");
-        // }
-        // Új megoldás:
-        // Régi megoldás:
-        // var result = await GetPackageAndCourier(packageid, dto.CourierId.Value);
-        // if (result.Error != null) return result.Error;
-        // Új megoldás:
         var result = await _packageService.GetPackageAndCourier(packageid, dto.CourierId.Value);
         if (result.Error != null) return NotFound(result.Error);
 
@@ -273,14 +197,6 @@ public class WarehouseController : ControllerBase
 
         if (usedCapacity == 0) return Conflict("A beérkező csomag mérete nem S, M vagy L.");
 
-        // Régi megoldás:
-        // foreach (string size in sizes)
-        // {
-        //     int space = PackageSizeHelper.GetSpace(size);
-        //     if (space == 0) return Conflict("A raktárban ismeretlen méretű csomag található. Előbb javítani kell az adatát.");
-        //     usedCapacity += space;
-        // }
-        // Új megoldás:
         int? warehouseSpace = PackageSizeHelper.GetTotalSpace(sizes);
         if (warehouseSpace == null) return Conflict("A raktárban ismeretlen méretű csomag található. Előbb javítani kell az adatát.");
         usedCapacity += warehouseSpace.Value;
@@ -292,9 +208,6 @@ public class WarehouseController : ControllerBase
         couriertask.IsLocked = true;
         package.CourierId = null;
 
-        // Régi megoldás:
-        // SetPackageStatus(package, PackageStatus.AtWarehouse, courier.Id, now);
-        // Új megoldás:
         _packageService.SetPackageStatus(package, PackageStatus.AtWarehouse, courier.Id, now);
         _context.WarehouseLogs.Add(new WarehouseLog
         {
@@ -309,30 +222,12 @@ public class WarehouseController : ControllerBase
         return Ok("Csomag a raktárba került!");
     }
 
-    // A raktáros kiszállítási feladatot rendel a futárhoz.
     [Authorize(Roles = "WarehouseOperator,Admin")]
     [HttpPut("{packageid}/assignfordelivery")]
     public async Task<IActionResult> Delivery(int packageid, [FromBody] PackageDTO dto)
     {
         if (dto.CourierId == null) return BadRequest("Adj meg egy érvényes futárazonosítót!");
         await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-        // Régi megoldás a közös lekérő előtt:
-        // // Régi megoldás:
-        // // var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-        // // Új megoldás:
-        // var package = await _context.Packages.FindAsync(packageid);
-        // // Régi megoldás:
-        // // var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
-        // // Új megoldás:
-        // var courier = await _context.Users.FindAsync(dto.CourierId);
-        //
-        // if (package == null) return NotFound("A csomag nem található!");
-        // if (courier == null) return NotFound("A futár nem található!");
-        // Új megoldás:
-        // Régi megoldás:
-        // var result = await GetPackageAndCourier(packageid, dto.CourierId.Value);
-        // if (result.Error != null) return result.Error;
-        // Új megoldás:
         var result = await _packageService.GetPackageAndCourier(packageid, dto.CourierId.Value);
         if (result.Error != null) return NotFound(result.Error);
 
@@ -355,22 +250,6 @@ public class WarehouseController : ControllerBase
         if (capacityError != null) return Conflict(capacityError);
 
         DateTime now = DateTime.UtcNow;
-        // Régi megoldás:
-        // await _context.CourierTasks.AddAsync(new CourierTask
-        // {
-        //     PackageId = packageid,
-        //     TaskType = CourierTaskType.Delivery,
-        //     Status = CourierTaskStatus.Assigned,
-        //     CourierId = courier.Id,
-        //     AssignmentTime = now
-        // });
-        //
-        // package.CourierId = courier.Id;
-        // SetPackageStatus(package, PackageStatus.AssignedForDelivery, courier.Id, now);
-        // Új megoldás:
-        // Régi megoldás:
-        // AssignPackage(package, courier.Id, CourierTaskType.Delivery, now);
-        // Új megoldás:
         _packageService.AssignPackage(package, courier.Id, CourierTaskType.Delivery, now);
 
         await _context.SaveChangesAsync();
@@ -416,19 +295,6 @@ public class WarehouseController : ControllerBase
                         if (requiredSpace == 0 || requiredSpace > freeSpace) continue;
 
                         DateTime now = DateTime.UtcNow;
-                        // Régi megoldás:
-                        // package.CourierId = courierId;
-                        // _context.CourierTasks.Add(new CourierTask
-                        // {
-                        //     PackageId = package.Id, CourierId = courierId,
-                        //     TaskType = CourierTaskType.Delivery, Status = CourierTaskStatus.Assigned,
-                        //     AssignmentTime = now
-                        // });
-                        // SetPackageStatus(package, PackageStatus.AssignedForDelivery, courierId, now);
-                        // Új megoldás:
-                        // Régi megoldás:
-                        // AssignPackage(package, courierId, CourierTaskType.Delivery, now);
-                        // Új megoldás:
                         _packageService.AssignPackage(package, courierId, CourierTaskType.Delivery, now);
 
                         await _context.SaveChangesAsync();
@@ -459,7 +325,6 @@ public class WarehouseController : ControllerBase
             }
             catch (Exception exception) when (exception.GetBaseException() is SqlException sql && sql.Number == 1205)
             {
-                // A teljes kiosztást újraolvassuk, a korábbi részmentések visszagördülnek.
                 _context.ChangeTracker.Clear();
             }
         }
@@ -481,7 +346,6 @@ public class WarehouseController : ControllerBase
                 Size = p.Size,
                 CurrentStatus = p.CurrentStatus,
                 CourierId = p.CourierId,
-                // Ezek a felületnek szóló jelzések; mentéskor újra ellenőrzünk. Kiszervezés?!
                 CanReassign = p.CourierId != null &&
                     p.CourierTasks.Count(task => task.Status != CourierTaskStatus.Completed) == 1 &&
                     p.CourierTasks.Any(task => task.CourierId == p.CourierId &&

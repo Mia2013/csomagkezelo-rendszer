@@ -6,10 +6,10 @@
 
 namespace Csomagkuldo.Migrations
 {
-    /// <inheritdoc />
+
     public partial class AddShippingFees : Migration
     {
-        /// <inheritdoc />
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
@@ -83,7 +83,7 @@ namespace Csomagkuldo.Migrations
                 onDelete: ReferentialAction.Restrict);
         }
 
-        /// <inheritdoc />
+
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(

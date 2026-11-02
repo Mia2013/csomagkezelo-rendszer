@@ -19,9 +19,6 @@ import { ROLES } from "../constants/constants";
 const Navigation = () => {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
-  // Régi megoldás:
-  // const homePage = allPages.filter((q) => q.path === "/")[0];
-  // Új megoldás:
   const homePage = allPages.find((page) => page.path === "/");
 
   const navPages = useMemo(() => {

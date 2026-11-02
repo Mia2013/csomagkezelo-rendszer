@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Csomagkuldo.Migrations
 {
-    /// <inheritdoc />
+
     public partial class InitialDatabase : Migration
     {
-        /// <inheritdoc />
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -271,7 +271,7 @@ namespace Csomagkuldo.Migrations
                 column: "PackageId");
         }
 
-        /// <inheritdoc />
+
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

@@ -18,7 +18,6 @@ public class CourierCarDTO
     [Range(1, 9999)]
     public int? Year { get; set; }
 
-    // Ezeket a kapacitáslekérdezés tölti ki, mentéskor nem vesszük át őket.
     public bool? IsActive { get; set; }
     public int? UsedCapacity { get; set; }
     public int? FreeCapacity { get; set; }

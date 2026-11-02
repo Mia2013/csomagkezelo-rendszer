@@ -22,7 +22,6 @@ namespace Csomagkuldo.Models
         public CourierTaskStatus Status { get; set; }
             = CourierTaskStatus.Assigned;
 
-        // Megkezdett feladatnál a raktáros már nem változtathat futárt.
         [ConcurrencyCheck]
         public bool IsLocked { get; set; }
 

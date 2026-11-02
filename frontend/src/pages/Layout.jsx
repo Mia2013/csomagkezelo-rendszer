@@ -2,9 +2,6 @@ import { Outlet } from "react-router";
 import { Box } from "@mui/material";
 import Nav from "../components/Nav";
 import CustomAlert from "../components/CustomAlert";
-// Régi megoldás:
-// import { useAuth } from "../provider/AuthProvider";
-// Új megoldás:
 import { useAuth } from "../provider/AuthContext";
 
 const Layout = () => {

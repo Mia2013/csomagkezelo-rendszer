@@ -9,7 +9,6 @@ using System.Data;
 namespace Csomagkuldo.Controllers
 
 {
-    //figyelni, hogy melyik controllert milyen jogosultsággal lehet elérni
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -81,20 +80,6 @@ namespace Csomagkuldo.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            // Régi megoldás:
-            // // Régi megoldás:
-            // // var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-            // // Új megoldás:
-            // var user = await _context.Users.FindAsync(id);
-            // if (user == null)
-            // {
-            //     return NotFound($"A(z) {id} azonosítójú felhasználó nem található!");
-            //
-            // }
-            // _context.Users.Remove(user);
-            // await _context.SaveChangesAsync();
-            // return Ok($"A(z) {id} azonosítójú felhasználó sikeresen törlésre került!");
-            // Új megoldás:
             await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
             var user = await _context.Users.FindAsync(id);
             if (user == null)

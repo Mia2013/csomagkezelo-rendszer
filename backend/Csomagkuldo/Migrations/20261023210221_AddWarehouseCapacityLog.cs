@@ -4,10 +4,10 @@
 
 namespace Csomagkuldo.Migrations
 {
-    /// <inheritdoc />
+
     public partial class AddWarehouseCapacityLog : Migration
     {
-        /// <inheritdoc />
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
@@ -23,7 +23,7 @@ namespace Csomagkuldo.Migrations
                 nullable: true);
         }
 
-        /// <inheritdoc />
+
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(

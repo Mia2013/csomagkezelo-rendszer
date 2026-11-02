@@ -19,9 +19,6 @@ const statusSteps = [
   },
   { status: "AtWarehouse", name: "Raktárban", icon: <Warehouse /> },
   {
-    // Régi megoldás:
-    // status: "AssignedToCourier",
-    // Új megoldás:
     status: "AssignedForDelivery",
     name: "Futárhoz rendelve",
     icon: <DeliveryDining />,
@@ -29,7 +26,6 @@ const statusSteps = [
   { status: "Delivered", name: "Kézbesítve", icon: <HomeWork /> },
 ];
 
-// A részletes backendállapotokat az öt meglévő lépéshez rendeljük.
 const statusAliases = {
   AssignedForPickup: "PreBooked",
   OutForDelivery: "AssignedForDelivery",
@@ -62,14 +58,6 @@ const formatDate = (date) =>
   dayjs(date).tz("Europe/Budapest").format("MM. DD. HH:mm");
 
 const StatusTimeline = ({ result }) => {
-  // Régi megoldás:
-  // const findEntry = (status) =>
-  //   result?.history?.findLast((item) => item.status === status);
-  //
-  // const currentIndex = result
-  //   ? statusSteps.findIndex((step) => step.status === result.currentStatus)
-  //   : -1;
-  // Új megoldás:
   const findEntry = (status) =>
     result?.history?.findLast((item) => item.status === status) ??
     result?.history?.findLast((item) => stepStatus(item.status) === status);

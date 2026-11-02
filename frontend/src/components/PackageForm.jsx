@@ -59,27 +59,6 @@ const PackageForm = () => {
   const [result, setResult] = useState(null);
   const sendingRef = useRef(false);
 
-  // Régi megoldás:
-  // const getUserById = async (id) => {
-  //   try {
-  //     const profile = await getData(`${endpoints.getUserById}/${id}`);
-  //     setData((current) => ({
-  //       ...current,
-  //       senderName: `${profile.lastName} ${profile.firstName}`,
-  //       senderAddress: profile.address || "",
-  //       senderPhoneNumber: profile.phoneNumber || "",
-  //     }));
-  //   } catch {
-  //     setError("A feladó adatait nem sikerült betölteni, töltsd ki kézzel!");
-  //   }
-  // };
-  //
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     getUserById(user.id);
-  //   }
-  // }, [isAuthenticated, user?.id]);
-  // Új megoldás:
   const userId = user?.id;
   useEffect(() => {
     if (!isAuthenticated || !userId) return;

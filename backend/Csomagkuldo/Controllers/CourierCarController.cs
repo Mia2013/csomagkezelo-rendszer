@@ -120,7 +120,6 @@ public class CourierCarController : ControllerBase
         if (oldCar != null)
         {
             oldCar.CourierId = null;
-            // Az egyedi futárkapcsolatot előbb felszabadítjuk, ugyanabban a tranzakcióban.
             await _context.SaveChangesAsync();
         }
         car.CourierId = courier.Id;

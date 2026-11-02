@@ -4,10 +4,10 @@
 
 namespace Csomagkuldo.Migrations
 {
-    /// <inheritdoc />
+
     public partial class PackageBooking : Migration
     {
-        /// <inheritdoc />
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
@@ -54,7 +54,7 @@ namespace Csomagkuldo.Migrations
                 unique: true);
         }
 
-        /// <inheritdoc />
+
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
