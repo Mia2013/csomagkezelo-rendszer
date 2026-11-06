@@ -145,7 +145,7 @@ public class PackageController : ControllerBase
     }
     //CSOMAG FUTÁRHOZ RENDELÉSE
     [Authorize(Roles = "WarehouseOperator,Admin")]
-    [HttpPut("{packageid}/assignforpickup")]
+    [HttpPut("assignforpickup/{packageid}")]
     public async Task<IActionResult> AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -175,7 +175,7 @@ public class PackageController : ControllerBase
     }
     //CSOMAG MEGÉRKEZIK A RAKTÁRBA
     [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
-    [HttpPut("{packageid}/receivetowarehouse")]
+    [HttpPut("receivetowarehouse/{packageid}")]
     public async Task<IActionResult>ReceiveToWarehouse(int packageid, [FromBody] CourierDTO dto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -204,7 +204,7 @@ public class PackageController : ControllerBase
     }
     //CSOMAGOT FELVESZI A FELADOTT CSOMAGOT
     [Authorize(Roles ="Courier,Admin")]
-    [HttpPut("{packageid}/pickuppackage")]
+    [HttpPut("pickuppackage/{packageid}")]
     public async Task<IActionResult>Pickup(int packageid, [FromBody] CourierDTO dto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -232,7 +232,7 @@ public class PackageController : ControllerBase
     }
     //FUTÁR MEGTEKINTHETI A FELVÉTELI FELADATAIT
     [Authorize(Roles ="Courier,Admin")]
-    [HttpGet("{courierid}/pickuptasks")]
+    [HttpGet("pickuptasks/{courierid}")]
     public async Task<IActionResult> GetCourirerPickUpTasks(int courierId)
     {
         var courier = await _context.Users.FindAsync(courierId);
@@ -252,7 +252,7 @@ public class PackageController : ControllerBase
     }
     //FUTÁR HOZZÁRENDELÉSE A CSOMAG KISZÁLLÍTÁSÁHOZ
     [Authorize(Roles ="WarehouseOperator,Admin")]
-    [HttpPut("{packageid}/assignfordelivery")]
+    [HttpPut("assignfordelivery/{packageid}")]
     public async Task<IActionResult>Delivery(int packageid, [FromBody] AssignCourierRequestDTO dto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -289,7 +289,7 @@ public class PackageController : ControllerBase
     }
     //FUTÁR MEGTEKINTHETI AZ ÖSSZES KISZÁLLÍTÁSI FELADATÁT
     [Authorize(Roles = "Courier,Admin")]
-    [HttpGet("{courierid}/deliverytasks")]
+    [HttpGet("deliverytasks/{courierid}")]
     public async Task<IActionResult> GetCourirerDeiveryTasks(int courierId)
     {
         var courier = await _context.Users.FindAsync(courierId);

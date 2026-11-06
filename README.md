@@ -29,7 +29,7 @@ dotnet run --project backend/Csomagkuldo --launch-profile https
 
 Egy másik terminálban:
 
-API: `https://localhost:7259/api`. OpenAPI: `https://localhost:7259/openapi/v1.json`.
+API: `https://localhost:7259/api`. OpenAPI: `https://localhost:7259/openapi/v1.json`. Scalar UI: `https://localhost:7259/scalar/v1`.
 Ha a helyi fejlesztői tanúsítvány még nincs megbízhatónak jelölve: `dotnet dev-certs https --trust`.
 Az alkalmazás nem futtat automatikus adatbázis-migrációt induláskor.
 
