@@ -8,7 +8,15 @@ import { AuthContext } from "./AuthContext";
 
 const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem("csomagkezelo_token") || "");
-    const [user, setUser] = useState({ role: ROLES.GUEST });
+const [user, setUser] = useState(() => {
+  const saved = localStorage.getItem("csomagkezelo_token");
+  if (!saved) return { role: ROLES.GUEST };
+  try {
+    return jwtDecode(saved);
+  } catch {
+    return { role: ROLES.GUEST };
+  }
+});
     const [alert, setAlert] = useState();
     const navigate = useNavigate();
 

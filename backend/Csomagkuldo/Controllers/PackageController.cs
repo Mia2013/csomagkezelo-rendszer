@@ -131,7 +131,7 @@ public class PackageController : ControllerBase
             History = history
         });
     }
-    [Authorize(Roles = "WarehouseOperatior,Admin")]
+    [Authorize(Roles = "WarehouseOperator,Admin")]
     [HttpGet("unassignedPrebooked")]
     public async Task<IActionResult> GetUnassignedPrebookedPackages()
     {
@@ -262,10 +262,7 @@ public class PackageController : ControllerBase
             return BadRequest("Hozzárendelés nem hajtható végre!");
 
         }
-        if (package == null || courier == null)
-        {
-            return BadRequest("A hozzárendelés nem hajtható végre!");
-        }
+
        
         await _context.CourierTasks.AddAsync(new CourierTask
         {
@@ -278,11 +275,11 @@ public class PackageController : ControllerBase
         await _context.PackageStatuses.AddAsync(new PackageStatusHistory
         {
             PackageId = packageid,
-            Status = PackageStatus.AssignedForPickup,
+            Status = PackageStatus.AssignedForDelivery,
             ChangedAt = DateTime.UtcNow
         });
 
-        package.CurrentStatus = PackageStatus.AssignedForPickup;
+        package.CurrentStatus = PackageStatus.AssignedForDelivery;
         await _context.SaveChangesAsync();
         return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
 
