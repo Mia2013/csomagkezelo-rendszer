@@ -31,4 +31,10 @@
         InProgress,
         Completed
     }
+    public enum PackageSize
+    {
+        S,
+        M,
+        L
+    }
 }

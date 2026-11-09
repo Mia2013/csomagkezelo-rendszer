@@ -27,5 +27,6 @@ namespace Csomagkuldo.Models
 
         public List<PackageStatusHistory> PackageStatusChanges { get; set; }
             = new List<PackageStatusHistory>();
+        public List<CourierCar> CourierCar { get; set; } = new List<CourierCar>();
     }
 }
