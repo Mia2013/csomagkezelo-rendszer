@@ -23,6 +23,7 @@ public class PackageController : ControllerBase
         _context = context;
     }
 
+    //CSOMAG ELŐJEGYZÉS LÉTREHOZÁSA
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create(CreatePackageDTO dto)
@@ -131,6 +132,7 @@ public class PackageController : ControllerBase
             History = history
         });
     }
+    //CsOMAGOK FUTÁRHOZ RENDELÉS NÉLKÜL
     [Authorize(Roles = "WarehouseOperator,Admin")]
     [HttpGet("unassignedPrebooked")]
     public async Task<IActionResult> GetUnassignedPrebookedPackages()
