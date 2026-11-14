@@ -93,15 +93,14 @@ namespace Csomagkuldo.Controllers
             {
                 return NotFound("Futár nem található!");
             }
-            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.CourierId == courierId);
 
             var result = await _context.CourierTasks.Where(ct => ct.CourierId == courierId && ct.Status == CourierTaskStatus.Assigned && ct.Package.CurrentStatus == PackageStatus.AssignedForDelivery).ToArrayAsync();
-
-            return Ok(result switch
+            if(!result.Any())
             {
-                null => "Jelenleg nincs kijelölt feladat!",
-                _ => "A feladatok sikeresen lekérve!"
-            });
+                return Ok("Jelenleg nincs kijelölt feladat!");
+            }
+            return Ok(result);
+            
         
 
 
