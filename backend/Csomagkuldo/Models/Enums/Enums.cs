@@ -15,7 +15,8 @@
         AtWarehouse,
         AssignedForPickup,
         AssignedForDelivery,
-        Delivered
+        Delivered,
+        OutForDelivery
     }
 
     public enum CourierTaskType

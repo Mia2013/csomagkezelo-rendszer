@@ -100,11 +100,94 @@ namespace Csomagkuldo.Controllers
                 return Ok("Jelenleg nincs kijelölt feladat!");
             }
             return Ok(result);
-            
+           
+
+    }
+        //A FUTÁR FELVESZI A CSOMAGOT ÉS ELINDUL A RAKTÁRBÓL
         
+        [Authorize(Roles = "Courier,Admin")]
+        [HttpPut("{packageid}/pickupfromwarehouse")]
+        public async Task<IActionResult> PickupFromWarehouse(int packageid, [FromBody] CourierDTO dto)
+        {
+            var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
+            if (package == null)
+            {
+                return NotFound("Csomag nem található!");
+            }
+
+            var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
+            if (courier == null)
+            {
+                return NotFound("Futár nem található!");
+            }
+
+            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.PackageId == packageid&& ct.CourierId == dto.CourierId&& ct.Status == CourierTaskStatus.Assigned&& ct.Package.CurrentStatus == PackageStatus.AssignedForDelivery);
+
+            if (couriertask == null)
+            {
+                return NotFound("A futárhoz nem tartozik feladat!");
+            }
+
+           
+            couriertask.Status = CourierTaskStatus.InProgress;
+            package.CurrentStatus = PackageStatus.OutForDelivery;
+
+            await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+            {
+                PackageId = packageid,
+                Status = PackageStatus.OutForDelivery,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+            return Ok("A futár elindult a csomaggal a raktárból!");
+        }
+        //CsOMAG KÉZBESÍTÉSE
+        [Authorize(Roles = "Courier,Admin")]
+        [HttpPut("{packageid}/deliver")]
+        public async Task<IActionResult> DeliverPackage(int packageid, [FromBody] CourierDTO dto)
+        {
+            var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
+            if (package == null)
+            {
+                return NotFound("Csomag nem található!");
+            }
+
+            var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
+            if (courier == null)
+            {
+                return NotFound("Futár nem található!");
+            }
+
+            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.PackageId == packageid&& ct.CourierId == dto.CourierId&& ct.Status == CourierTaskStatus.InProgress);
+
+            if (couriertask == null)
+            {
+                return NotFound("Nincs ilyen futárfeladat!");
+            }
+
+            var couriercar = await _context.CourierCars.FirstOrDefaultAsync(c => c.CourierId == dto.CourierId);
+            if (couriercar != null)
+            {
+                var capacityUnit = await _context.ShippingFees.Where(s => s.Type == package.Size).Select(u => u.CapacityUnit).FirstOrDefaultAsync();
+
+                couriercar.Capacity += capacityUnit;
+            }
+
+            couriertask.Status = CourierTaskStatus.Completed;
+            package.CurrentStatus = PackageStatus.Delivered;
+
+            await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+            {
+                PackageId = packageid,
+                Status = PackageStatus.Delivered,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+            return Ok("Csomag sikeresen kézbesítve!");
+        }
 
 
     }
-
-}
 }

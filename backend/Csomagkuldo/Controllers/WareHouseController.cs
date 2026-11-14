@@ -48,7 +48,7 @@ namespace Csomagkuldo.Controllers
             var Car = await _context.CourierCars.Where(c => c.Capacity >= capacityUnit && c.CourierId == courierdto.CourierId).FirstOrDefaultAsync();
             if (Car == null)
             {
-                return BadRequest("Jelenleg nincs szabad elérhető autó!");
+                return BadRequest("Az autó elérte maximum kapacitását!");
             }
             
           
@@ -73,6 +73,48 @@ namespace Csomagkuldo.Controllers
                 return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
             
           
+        }
+        
+        //FUTÁR HOZZÁRENDELÉSE A CSOMAG KISZÁLLÍTÁSÁHOZ
+        [Authorize(Roles = "WarehouseOperator,Admin")]
+        [HttpPut("{packageid}/assignfordelivery")]
+        public async Task<IActionResult> Delivery(int packageid, [FromBody] AssignCourierRequestDTO dto)
+        {
+            var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
+            var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
+            if (package == null || courier == null)
+            {
+                return BadRequest("Hozzárendelés nem hajtható végre!");
+
+            }
+           
+            var capacityUnit = await _context.ShippingFees.Where(s => s.Type == package.Size).Select(u => u.CapacityUnit).FirstOrDefaultAsync();
+            var Car = await _context.CourierCars.Where(c => c.Capacity >= capacityUnit && c.CourierId ==dto.CourierId).FirstOrDefaultAsync();
+            if (Car == null)
+            {
+                return BadRequest("Az autóba elérte maximum kapacitását!");
+            }
+            package.CurrentStatus = PackageStatus.AssignedForDelivery;
+            Car.Capacity -= capacityUnit;
+            await _context.CourierTasks.AddAsync(new CourierTask
+            {
+                PackageId = packageid,
+                Status = CourierTaskStatus.Assigned,
+                CourierId = courier.Id,
+                AssignmentTime = DateTime.UtcNow
+
+            });
+            await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+            {
+                PackageId = packageid,
+                Status = PackageStatus.AssignedForDelivery,
+                ChangedAt = DateTime.UtcNow
+            });
+
+            
+            await _context.SaveChangesAsync();
+            return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
+
         }
         //CSOMAG MEGÉRKEZIK A RAKTÁRBA
         [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
@@ -115,47 +157,6 @@ namespace Csomagkuldo.Controllers
             });
             await _context.SaveChangesAsync();
             return Ok("Csomag a raktárba került!");
-        }
-        //FUTÁR HOZZÁRENDELÉSE A CSOMAG KISZÁLLÍTÁSÁHOZ
-        [Authorize(Roles = "WarehouseOperator,Admin")]
-        [HttpPut("{packageid}/assignfordelivery")]
-        public async Task<IActionResult> Delivery(int packageid, [FromBody] AssignCourierRequestDTO dto)
-        {
-            var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-            var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
-            if (package == null || courier == null)
-            {
-                return BadRequest("Hozzárendelés nem hajtható végre!");
-
-            }
-           
-            var capacityUnit = await _context.ShippingFees.Where(s => s.Type == package.Size).Select(u => u.CapacityUnit).FirstOrDefaultAsync();
-            var Car = await _context.CourierCars.Where(c => c.Capacity >= capacityUnit && c.CourierId ==dto.CourierId).FirstOrDefaultAsync();
-            if (Car == null)
-            {
-                return BadRequest("Jelenleg nincs szabad elérhető autó!");
-            }
-            package.CurrentStatus = PackageStatus.AssignedForDelivery;
-            Car.Capacity -= capacityUnit;
-            await _context.CourierTasks.AddAsync(new CourierTask
-            {
-                PackageId = packageid,
-                Status = CourierTaskStatus.Assigned,
-                CourierId = courier.Id,
-                AssignmentTime = DateTime.UtcNow
-
-            });
-            await _context.PackageStatuses.AddAsync(new PackageStatusHistory
-            {
-                PackageId = packageid,
-                Status = PackageStatus.AssignedForDelivery,
-                ChangedAt = DateTime.UtcNow
-            });
-
-            
-            await _context.SaveChangesAsync();
-            return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
-
         }
     }
 }
