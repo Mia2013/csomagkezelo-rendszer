@@ -187,6 +187,55 @@ namespace Csomagkuldo.Controllers
             await _context.SaveChangesAsync();
             return Ok("Csomag sikeresen kézbesítve!");
         }
+        // FUTÁR SZÁLLÍTÁSI TÖRTÉNETE NAPI / HETI / HAVI 
+        [Authorize(Roles = "Courier,Admin")]
+        [HttpGet("{courierId}/history")]
+        public async Task<IActionResult> GetCourierHistory(int courierId, [FromQuery] string intervall)
+        {
+            var courier = await _context.Users.FindAsync(courierId);
+            if (courier == null)
+            {
+                return NotFound("A futár nem található!");
+            }
+
+            DateTime now = DateTime.UtcNow;
+            DateTime startDate = new DateTime();
+            switch(intervall)
+            {
+                case "daily":
+                    startDate=now.Date;
+                        break;
+                case "weekly":
+                    startDate = now.Date.AddDays(-7);
+                    break;
+                case "monthly":
+                    startDate = now.Date.AddMonths(-1);
+                    break;
+                default:
+                    break;
+            };
+
+            var tasks = await _context.CourierTasks.Where(ct => ct.CourierId == courierId&& ct.Status == CourierTaskStatus.Completed&& ct.AssignmentTime >= startDate)
+                .Select(ct => new
+                {
+                    TaskId = ct.Id,
+                    PackageId = ct.Package.Id,
+                    TrackingNumber = ct.Package.TrackingNumber,
+                    AssignmentTime = ct.AssignmentTime,
+                    PackageStatus = ct.Package.CurrentStatus,
+                    SenderAddress = ct.Package.SenderAddress,
+                    RecipientAddress = ct.Package.RecipientAddress
+                })
+                .OrderByDescending(ct => ct.AssignmentTime)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                Period = intervall.ToLower(),
+                TotalCompletedTasks = tasks.Count,
+                Tasks = tasks
+            });
+        }
 
 
     }
