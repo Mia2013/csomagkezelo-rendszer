@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata.Ecma335;
+using System.Security.Claims;
 
 namespace Csomagkuldo.Controllers;
 
@@ -132,115 +132,32 @@ public class PackageController : ControllerBase
             History = history
         });
     }
-    //CsOMAGOK FUTÁRHOZ RENDELÉS NÉLKÜL
-    [Authorize(Roles = "WarehouseOperator,Admin")]
-    [HttpGet("unassignedPrebooked")]
-    public async Task<IActionResult> GetUnassignedPrebookedPackages()
+    // REGISZTRÁLT FELHASZNÁLÓ CSOMAG MÓDOSÍTÁSA
+    [Authorize]
+    [HttpPut("{packageId}/update")]
+    public async Task<IActionResult> UpdatePackage(int packageId, [FromBody] UpdatePackageDTO dto)
     {
-        var result = await _context.Packages.Where(p => p.CurrentStatus == PackageStatus.PreBooked && p.CourierId == null).ToListAsync();
-        if (result == null)
-        {
-            return NotFound("Nincs felvételre váró csomag!");
-        }
-        return Ok(result);
-
-    }
-    //CSOMAG FUTÁRHOZ RENDELÉSE
-    [Authorize(Roles = "WarehouseOperator,Admin")]
-    [HttpPut("assignforpickup/{packageid}")]
-    public async Task<IActionResult> AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
-    {
-        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-        var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == courierdto.CourierId);
-        if (package == null || courier == null)
-        {
-            return BadRequest("A hozzárendelés nem hajtható végre!");
-        }
-        await _context.CourierTasks.AddAsync(new CourierTask
-        {
-            PackageId=packageid,
-            Status=CourierTaskStatus.Assigned,
-            CourierId=courier.Id,
-            AssignmentTime=DateTime.UtcNow
-
-        });
-        await _context.PackageStatuses.AddAsync(new PackageStatusHistory
-        {
-            PackageId = packageid,
-            Status = PackageStatus.AssignedForPickup,
-            ChangedAt = DateTime.UtcNow
-        });
-
-        package.CurrentStatus = PackageStatus.AssignedForPickup;
-        await _context.SaveChangesAsync();
-        return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
-    }
-    //CSOMAG MEGÉRKEZIK A RAKTÁRBA
-    [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
-    [HttpPut("receivetowarehouse/{packageid}")]
-    public async Task<IActionResult>ReceiveToWarehouse(int packageid, [FromBody] CourierDTO dto)
-    {
-        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-        var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
-        if (package==null)
+        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageId);
+        if (package == null)
         {
             return NotFound("A csomag nem található!");
         }
-        if(courier==null)
+        var UserEmail = User.Identity?.Name;
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email==UserEmail);
+        if (user==null||package.SenderId!=user.Id)
         {
-            return NotFound("A futár nem található!");
+            return BadRequest("Csak a saját előjegyzett csomagodat módosíthatod!");
         }
-        var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(c => c.Id == dto.CourierId && c.PackageId == packageid);
-       
-        couriertask.Status = CourierTaskStatus.Completed;
-        
-        package.CurrentStatus = PackageStatus.AtWarehouse;
-        await _context.PackageStatuses.AddAsync(new PackageStatusHistory
-        {
-            PackageId = packageid,
-            Status = PackageStatus.AtWarehouse,
-            ChangedAt = DateTime.UtcNow
-        });
-        await _context.SaveChangesAsync();
-        return Ok("Csomag a raktárba került!");
-    }
-    //CSOMAGOT FELVESZI A FELADOTT CSOMAGOT
-    [Authorize(Roles ="Courier,Admin")]
-    [HttpPut("pickuppackage/{packageid}")]
-    public async Task<IActionResult>Pickup(int packageid, [FromBody] CourierDTO dto)
-    {
-        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-        var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
-        if(package==null)
+
+  
+        if (package.CurrentStatus != PackageStatus.PreBooked)
         {
             return NotFound("Csomag nem található");
         }
-        if(courier==null)
+
+        if (DateTime.UtcNow.Date >= package.PickupDate.Date)
         {
-            return NotFound("Futár nem található");
-        }
-        var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.PackageId == packageid && ct.CourierId == dto.CourierId);
-        couriertask.Status = CourierTaskStatus.InProgress;
-        package.CurrentStatus = PackageStatus.InTransitToWarehouse;
-        await _context.PackageStatuses.AddAsync(new PackageStatusHistory
-        {
-            Package = package,
-            Status = PackageStatus.InTransitToWarehouse,
-            ChangedAt = DateTime.UtcNow
-        });
-        
-        await _context.SaveChangesAsync();
-        return Ok("Csomag sikeresen felvéve!");
-    }
-    //FUTÁR MEGTEKINTHETI A FELVÉTELI FELADATAIT
-    [Authorize(Roles ="Courier,Admin")]
-    [HttpGet("pickuptasks/{courierid}")]
-    public async Task<IActionResult> GetCourirerPickUpTasks(int courierId)
-    {
-        var courier = await _context.Users.FindAsync(courierId);
-        if(courier==null)
-        {
-            return NotFound("Futár nem található!");
+            return BadRequest("A csomag adatait legkésőbb a felvétel előtti napig lehet módoítani!");
         }
         var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct=> ct.CourierId == courierId);
 
@@ -248,51 +165,15 @@ public class PackageController : ControllerBase
        
         return Ok(result switch
         {
-            null => "Jelenleg nincs kijelölt feladat!",
-            _ =>"A feladatok sikeresen lekérve!"
-        });
-    }
-    //FUTÁR HOZZÁRENDELÉSE A CSOMAG KISZÁLLÍTÁSÁHOZ
-    [Authorize(Roles ="WarehouseOperator,Admin")]
-    [HttpPut("assignfordelivery/{packageid}")]
-    public async Task<IActionResult>Delivery(int packageid, [FromBody] AssignCourierRequestDTO dto)
-    {
-        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-        var courier= await _context.Users.FirstOrDefaultAsync(c => c.Id==dto.CourierId);
-        if(package==null||courier==null)
-        {
-            return BadRequest("Hozzárendelés nem hajtható végre!");
-
+            package.PickupSlot = dto.PickupSlot;
         }
 
-       
-        await _context.CourierTasks.AddAsync(new CourierTask
+        if (!string.IsNullOrWhiteSpace(dto.RecipientAddress))
         {
-            PackageId = packageid,
-            Status = CourierTaskStatus.Assigned,
-            CourierId = courier.Id,
-            AssignmentTime = DateTime.UtcNow
+            package.RecipientAddress = dto.RecipientAddress;
+        }
 
-        });
-        await _context.PackageStatuses.AddAsync(new PackageStatusHistory
-        {
-            PackageId = packageid,
-            Status = PackageStatus.AssignedForDelivery,
-            ChangedAt = DateTime.UtcNow
-        });
-
-        package.CurrentStatus = PackageStatus.AssignedForDelivery;
-        await _context.SaveChangesAsync();
-        return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
-
-    }
-    //FUTÁR MEGTEKINTHETI AZ ÖSSZES KISZÁLLÍTÁSI FELADATÁT
-    [Authorize(Roles = "Courier,Admin")]
-    [HttpGet("deliverytasks/{courierid}")]
-    public async Task<IActionResult> GetCourirerDeiveryTasks(int courierId)
-    {
-        var courier = await _context.Users.FindAsync(courierId);
-        if (courier == null)
+        if (dto.Size.HasValue)
         {
             return NotFound("Futár nem található!");
         }
@@ -300,11 +181,8 @@ public class PackageController : ControllerBase
 
         var result = await _context.CourierTasks.Where(ct => ct.CourierId == courierId && ct.Status == CourierTaskStatus.Assigned&&ct.Package.CurrentStatus==PackageStatus.AssignedForDelivery).ToArrayAsync();
 
-        return Ok(result switch
-        {
-            null => "Jelenleg nincs kijelölt feladat!",
-            _ => "A feladatok sikeresen lekérve!"
-        });
+        await _context.SaveChangesAsync();
+        return Ok("A csomag adatai sikeresen frissítve!");
     }
 
 

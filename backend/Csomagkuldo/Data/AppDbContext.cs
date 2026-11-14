@@ -15,6 +15,8 @@ namespace Csomagkuldo.Data
         public DbSet<Package> Packages { get; set; } = null!;
         public DbSet<PackageStatusHistory> PackageStatuses { get; set; } = null!;
         public DbSet<WarehouseLog> WarehouseLogs { get; set; } = null!;
+        public DbSet<CourierCar> CourierCars { get; set; } = null!;
+        public DbSet<ShippingFee>ShippingFees { get; set; } = null!;
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {
@@ -37,6 +39,16 @@ namespace Csomagkuldo.Data
                 .WithMany(user => user.CourierTasks)
                 .HasForeignKey(task => task.CourierId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Package>()
+                .HasOne<ShippingFee>()
+                .WithMany(s => s.Packages)
+                .HasForeignKey(p => p.Size)
+                .HasPrincipalKey(s => s.Type);
+            modelBuilder.Entity<Package>()
+      .HasOne(p => p.ShippingFee)
+      .WithMany(sf => sf.Packages)
+      .HasForeignKey(p => p.Size)
+      .HasPrincipalKey(sf => sf.Type);
         }
     }
 }

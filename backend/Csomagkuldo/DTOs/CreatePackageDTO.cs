@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-
+using Csomagkuldo.Enums;
 namespace Csomagkuldo.DTOs;
+
 
 public class CreatePackageDTO
 {
@@ -32,8 +33,8 @@ public class CreatePackageDTO
     [Required, Range(1, 30000)]
     public int? Weight { get; set; }
 
-    [Required, RegularExpression("^(S|M|L)$")]
-    public string Size { get; set; } = string.Empty;
+   
+    public PackageSize Size { get; set; }
 
     [Required]
     public DateOnly? PickupDate { get; set; }

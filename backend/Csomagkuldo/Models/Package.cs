@@ -19,7 +19,8 @@ namespace Csomagkuldo.Models
 
         public int Weight { get; set; }
 
-        public string Size { get; set; } = string.Empty;
+        public PackageSize Size { get; set; }
+        public ShippingFee? ShippingFee { get; set; }
 
         // vendég feladó
         public int? SenderId { get; set; }
