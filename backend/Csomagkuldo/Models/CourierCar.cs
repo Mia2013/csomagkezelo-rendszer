@@ -11,13 +11,13 @@ namespace Csomagkuldo.Models
 
 		public int? CourierId { get; set; }
 
-		public virtual User Courier { get; set; }
+		public virtual User? Courier { get; set; }
 
-		public string LicensePlate { get; set; }
+		public string? LicensePlate { get; set; }
 
-		public string Manufacturer { get; set; }
+		public string? Manufacturer { get; set; }
 
-		public string Model { get; set; }
+		public string? Model { get; set; }
 
 		public int Year { get; set; }
 

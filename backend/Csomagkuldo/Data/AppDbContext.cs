@@ -44,6 +44,11 @@ namespace Csomagkuldo.Data
                 .WithMany(s => s.Packages)
                 .HasForeignKey(p => p.Size)
                 .HasPrincipalKey(s => s.Type);
+            modelBuilder.Entity<Package>()
+      .HasOne(p => p.ShippingFee)
+      .WithMany(sf => sf.Packages)
+      .HasForeignKey(p => p.Size)
+      .HasPrincipalKey(sf => sf.Type);
         }
     }
 }

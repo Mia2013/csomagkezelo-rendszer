@@ -43,24 +43,36 @@ namespace Csomagkuldo.Controllers
             {
                 return BadRequest("A hozzárendelés nem hajtható végre!");
             }
-            await _context.CourierTasks.AddAsync(new CourierTask
-            {
-                PackageId = packageid,
-                Status = CourierTaskStatus.Assigned,
-                CourierId = courier.Id,
-                AssignmentTime = DateTime.UtcNow
 
-            });
-            await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+            var capacityUnit = await _context.ShippingFees.Where(s => s.Type == package.Size).Select(u => u.CapacityUnit).FirstOrDefaultAsync();
+            var Car = await _context.CourierCars.Where(c => c.Capacity >= capacityUnit && c.CourierId == courierdto.CourierId).FirstOrDefaultAsync();
+            if (Car == null)
             {
-                PackageId = packageid,
-                Status = PackageStatus.AssignedForPickup,
-                ChangedAt = DateTime.UtcNow
-            });
+                return BadRequest("Jelenleg nincs szabad elérhető autó!");
+            }
+            
+          
+                await _context.CourierTasks.AddAsync(new CourierTask
+                {
+                    PackageId = packageid,
+                    Status = CourierTaskStatus.Assigned,
+                    CourierId = courier.Id,
+                    AssignmentTime = DateTime.UtcNow
 
-            package.CurrentStatus = PackageStatus.AssignedForPickup;
-            await _context.SaveChangesAsync();
-            return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
+                });
+                await _context.PackageStatuses.AddAsync(new PackageStatusHistory
+                {
+                    PackageId = packageid,
+                    Status = PackageStatus.AssignedForPickup,
+                    ChangedAt = DateTime.UtcNow
+                });
+                Car.Capacity -= capacityUnit;
+                package.CurrentStatus = PackageStatus.AssignedForPickup;
+
+                await _context.SaveChangesAsync();
+                return Ok("Futár sikeresen  a csomaghoz lett rendelve!");
+            
+          
         }
         //CSOMAG MEGÉRKEZIK A RAKTÁRBA
         [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
@@ -77,7 +89,20 @@ namespace Csomagkuldo.Controllers
             {
                 return NotFound("A futár nem található!");
             }
-            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(c => c.Id == dto.CourierId && c.PackageId == packageid);
+            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(c => c.CourierId == dto.CourierId && c.PackageId == packageid);
+
+            if (couriertask == null)
+            {
+                return NotFound("A futár feladat nem található!");
+            }
+
+            var couriercar = await _context.CourierCars.FirstOrDefaultAsync(c => c.CourierId == dto.CourierId);
+            if (couriercar != null)
+            {
+                var capacityUnit = await _context.ShippingFees.Where(sf => sf.Type == package.Size).Select(sf => sf.CapacityUnit).FirstOrDefaultAsync();
+
+                couriercar.Capacity += capacityUnit;
+            }
 
             couriertask.Status = CourierTaskStatus.Completed;
 

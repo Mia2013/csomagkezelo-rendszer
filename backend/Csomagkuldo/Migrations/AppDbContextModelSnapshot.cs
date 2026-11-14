@@ -37,15 +37,12 @@ namespace Csomagkuldo.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("LicensePlate")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Manufacturer")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Model")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Year")
@@ -387,8 +384,10 @@ namespace Csomagkuldo.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CapacityUnit")
+                        .HasColumnType("int");
+
                     b.Property<string>("MaxSize")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RegisteredPrice")
@@ -448,7 +447,7 @@ namespace Csomagkuldo.Migrations
                         .WithMany("SentPackages")
                         .HasForeignKey("SenderId");
 
-                    b.HasOne("ShippingFee", null)
+                    b.HasOne("ShippingFee", "ShippingFee")
                         .WithMany("Packages")
                         .HasForeignKey("Size")
                         .HasPrincipalKey("Type")
@@ -460,6 +459,8 @@ namespace Csomagkuldo.Migrations
                     b.Navigation("Recipient");
 
                     b.Navigation("Sender");
+
+                    b.Navigation("ShippingFee");
                 });
 
             modelBuilder.Entity("Csomagkuldo.Models.PackageStatusHistory", b =>

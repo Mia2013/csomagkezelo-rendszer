@@ -34,16 +34,31 @@ namespace Csomagkuldo.Controllers
             {
                 return NotFound("Futár nem található");
             }
-            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.PackageId == packageid && ct.CourierId == dto.CourierId);
+            
+            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.PackageId == packageid && ct.CourierId == dto.CourierId&&ct.Status == CourierTaskStatus.Assigned);
+           
+            if (couriertask == null)
+            {
+                return NotFound("A futárhoz nem tartozik ilyen feladat.");
+            }
+           
+            var couriercar=await _context.CourierCars.FirstOrDefaultAsync(c=>c.CourierId==dto.CourierId);
+
+            if (couriercar == null)
+            {
+                return BadRequest("A futárhoz nincs autó rendelve.");
+            }
+
             couriertask.Status = CourierTaskStatus.InProgress;
             package.CurrentStatus = PackageStatus.InTransitToWarehouse;
+
             await _context.PackageStatuses.AddAsync(new PackageStatusHistory
             {
                 Package = package,
                 Status = PackageStatus.InTransitToWarehouse,
                 ChangedAt = DateTime.UtcNow
             });
-
+           
             await _context.SaveChangesAsync();
             return Ok("Csomag sikeresen felvéve!");
         }
