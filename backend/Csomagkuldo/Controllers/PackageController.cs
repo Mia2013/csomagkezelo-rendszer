@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Csomagkuldo.Controllers;
 
@@ -130,5 +131,53 @@ public class PackageController : ControllerBase
             History = history
         });
     }
+    // REGISZTRÁLT FELHASZNÁLÓ CSOMAG MÓDOSÍTÁSA
+    [Authorize]
+    [HttpPut("{packageId}/update")]
+    public async Task<IActionResult> UpdatePackage(int packageId, [FromBody] UpdatePackageDTO dto)
+    {
+        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageId);
+        if (package == null)
+        {
+            return NotFound("A csomag nem található!");
+        }
+        var UserEmail = User.Identity?.Name;
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email==UserEmail);
+        if (user==null||package.SenderId!=user.Id)
+        {
+            return BadRequest("Csak a saját előjegyzett csomagodat módosíthatod!");
+        }
+
+  
+        if (package.CurrentStatus != PackageStatus.PreBooked)
+        {
+            return BadRequest("A csomag már nem módosítható!");
+        }
+
+        if (DateTime.UtcNow.Date >= package.PickupDate.Date)
+        {
+            return BadRequest("A csomag adatait legkésőbb a felvétel előtti napig lehet módoítani!");
+        }
+
+        
+        if (!string.IsNullOrWhiteSpace(dto.PickupSlot))
+        {
+            package.PickupSlot = dto.PickupSlot;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.RecipientAddress))
+        {
+            package.RecipientAddress = dto.RecipientAddress;
+        }
+
+        if (dto.Size.HasValue)
+        {
+            package.Size = dto.Size.Value;
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok("A csomag adatai sikeresen frissítve!");
+    }
+
 
 }
