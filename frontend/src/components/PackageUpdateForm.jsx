@@ -1,6 +1,6 @@
 import { Box, Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import Save from "@mui/icons-material/Save";
-import Close from "@mui/icons-material/Close";
+import Cancel from "@mui/icons-material/Cancel";
 
 import { endpoints, putData } from "../api/apiCalls";
 import { useAuth } from "../provider/AuthContext";
@@ -22,8 +22,8 @@ const PackageUpdateForm = ({ item, onSaved, onCancel }) => {
 
   return (
     <Box component="form" onSubmit={handleSubmit}>
-      <Typography variant="h5" gutterBottom>
-        Csomag módosítása
+      <Typography variant="h5" sx={{mb: 2}}>
+        <Typography variant="h5" sx={{ fontStyle: 'italic', display: 'inline'}}>{item.trackingNumber}</Typography> csomag módosítása
       </Typography>
       <Stack spacing={2}>
         <TextField
@@ -46,7 +46,7 @@ const PackageUpdateForm = ({ item, onSaved, onCancel }) => {
           <Button type="submit" variant="contained" startIcon={<Save />}>
             Mentés
           </Button>
-          <Button color="inherit" startIcon={<Close />} onClick={onCancel}>
+          <Button color="inherit" variant="contained" startIcon={<Cancel />} onClick={onCancel}>
             Mégse
           </Button>
         </Stack>
