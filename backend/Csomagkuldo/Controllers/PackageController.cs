@@ -52,7 +52,7 @@ public class PackageController : ControllerBase
 
         var package = new Package
         {
-            TrackingNumber = Guid.NewGuid().ToString(),
+            TrackingNumber = Guid.NewGuid().ToString("N")[..10].ToUpper(),
             SenderId = senderId,
             SenderName = dto.SenderName.Trim(),
             SenderAddress = dto.SenderAddress.Trim(),
@@ -92,12 +92,12 @@ public class PackageController : ControllerBase
     [HttpGet("track")]
     public async Task<IActionResult> Track([FromQuery] string trackingNumber)
     {
-        if (!Guid.TryParse(trackingNumber?.Trim(), out Guid number))
+        string normalizedNumber = trackingNumber?.Trim() ?? string.Empty;
+        if (normalizedNumber.Length == 0)
         {
             return BadRequest("Adj meg egy érvényes csomagazonosítót!");
         }
 
-        string normalizedNumber = number.ToString();
         var package = await _context.Packages.AsNoTracking()
             .Where(item => item.TrackingNumber == normalizedNumber)
             .Select(item => new { item.Id, item.TrackingNumber })

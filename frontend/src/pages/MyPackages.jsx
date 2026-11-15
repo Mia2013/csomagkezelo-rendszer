@@ -1,10 +1,10 @@
 import { Container } from "@mui/material";
-import PackageList from "../components/PackageList";
+import PackageListUser from "../components/PackageListUser";
 
 const MyPackages = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <PackageList />
+      <PackageListUser />
     </Container>
   );
 };
