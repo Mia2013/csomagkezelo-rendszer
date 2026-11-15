@@ -4,6 +4,7 @@ export const controllers = {
   AUTH: "Auth",
   PACKAGE: "Package",
   USER: "User",
+  WAREHOUSE: "WareHouse",
 };
 
 export const endpoints = {
@@ -14,10 +15,10 @@ export const endpoints = {
   getAllByUser: `${controllers.PACKAGE}/getAllByUser`,
   getUserById: `${controllers.USER}`,
   updateUser: `${controllers.USER}/update`,
-  unassignedPrebooked: `${controllers.PACKAGE}/unassignedPrebooked`,
-  assignforpickup: `${controllers.PACKAGE}/assignforpickup`,
-  assignfordelivery: `${controllers.PACKAGE}/assignfordelivery`,
-  receivetowarehouse: `${controllers.PACKAGE}/receivetowarehouse`,
+  unassignedPrebooked: `${controllers.WAREHOUSE}/unassignedPrebooked`,
+  assignforpickup: `${controllers.WAREHOUSE}/assignforpickup`,
+  assignfordelivery: `${controllers.WAREHOUSE}/assignfordelivery`,
+  receivetowarehouse: `${controllers.WAREHOUSE}/receivetowarehouse`,
   pickuptasks: `${controllers.PACKAGE}/pickuptasks`,
   deliverytasks: `${controllers.PACKAGE}/deliverytasks`,
   pickuppackage: `${controllers.PACKAGE}/pickuppackage`,

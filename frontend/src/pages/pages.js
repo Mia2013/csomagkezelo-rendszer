@@ -4,6 +4,7 @@ import Register from "./Register.jsx";
 
 import CreatePackage from "./CreatePackage.jsx";
 import MyPackages from "./MyPackages.jsx";
+import WarehousePage from "./Warehouse.jsx";
 
 export const allPages = [
   {
@@ -37,6 +38,14 @@ export const allPages = [
     path: "/csomagjaim",
     component: MyPackages,
     showInNavbar: true,
-    roles: [ROLES.CUSTOMER],
+    roles: ALL_ROLES,
+  },
+  {
+    id: "warehouse",
+    name: "Raktár",
+    path: "/raktar",
+    component: WarehousePage,
+    showInNavbar: true,
+    roles: [ROLES.WAREHOUSE_OPERATOR, ROLES.ADMIN],
   },
 ];
