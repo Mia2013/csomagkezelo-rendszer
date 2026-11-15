@@ -1,6 +1,8 @@
 ﻿using Csomagkuldo.Data;
 using Csomagkuldo.DTOs;
+using Csomagkuldo.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +10,7 @@ namespace Csomagkuldo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly AppDbContext _context;
@@ -17,7 +20,7 @@ namespace Csomagkuldo.Controllers
             _context = context;
         }
         //MÁSIK FUTÁRHOZ FUTÁRHOZ RENDELÉS
-        [Authorize(Roles = "Admin")]
+        
         [HttpPut("packages/reassign/{packageid}")]
         public async Task<IActionResult> ReassignCourier(int packageid, [FromBody] AssignCourierRequestDTO dto)
         {
@@ -69,6 +72,85 @@ namespace Csomagkuldo.Controllers
             await _context.SaveChangesAsync();
             return Ok("A csomag sikeresen másik futárhoz lett rendelve!");
         }
+        //ÚJ FELHASZNÁLÓ LÉTREHOZÁSA
+        [HttpPost]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
+        {
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                UserName = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                Address = dto.Address,
+                Role = dto.Role
+            };
 
+            PasswordHasher<User> passhasher = new PasswordHasher<User>();
+            user.PasswordHash=passhasher.HashPassword(user, dto.Password);
+
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(user);
+        }
+        //FELHASZNÁLÓK LEKÉRÉSE
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = await _context.Users
+                .Select(u => new UserProfileDTO
+                {
+                    
+                 FirstName = u.FirstName,
+                 LastName = u.LastName,
+                 Email = u.Email,
+                 PhoneNumber = u.PhoneNumber,
+                 Address = u.Address,
+                 Role=u.Role
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDTO dto)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.Email = dto.Email;
+            user.UserName = dto.Email;
+            user.NormalizedEmail = dto.Email.ToUpper();
+            user.NormalizedUserName = dto.Email.ToUpper();
+            user.PhoneNumber = dto.PhoneNumber;
+            user.Address = dto.Address;
+            user.Role = dto.Role;
+
+           
+            if (!string.IsNullOrEmpty(dto.Password))
+            {
+                PasswordHasher<User> passhasher = new PasswordHasher<User>();
+                user.PasswordHash = passhasher.HashPassword(user, dto.Password);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
