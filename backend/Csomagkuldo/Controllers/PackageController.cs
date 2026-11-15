@@ -40,14 +40,11 @@ public class PackageController : ControllerBase
         // A hibás tokennel érkező kérést nem mentjük el vendégfeladásként.
         if (Request.Headers.ContainsKey("Authorization"))
         {
-            var authentication = await HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-            if (!authentication.Succeeded ||
-                !int.TryParse(authentication.Principal?.FindFirst("id")?.Value, out int userId) ||
-                !await _context.Users.AnyAsync(user => user.Id == userId))
+            if (!User.Identity.IsAuthenticated)
             {
                 return Unauthorized("A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra!");
             }
-            senderId = userId;
+            senderId = int.Parse(User.FindFirstValue("userId"));
         }
 
         var package = new Package
@@ -143,9 +140,8 @@ public class PackageController : ControllerBase
         {
             return NotFound("A csomag nem található!");
         }
-        var UserEmail = User.Identity?.Name;
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email==UserEmail);
-        if (user==null||package.SenderId!=user.Id)
+
+        if (package.SenderId.ToString() != User.FindFirstValue("userId"))
         {
             return BadRequest("Csak a saját előjegyzett csomagodat módosíthatod!");
         }
@@ -184,7 +180,7 @@ public class PackageController : ControllerBase
     [HttpGet("getAllByUser")]
     public async Task<IActionResult> GetAllByUser()
     {
-        int userId = int.Parse(User.FindFirst("id")!.Value);
+        int userId = int.Parse(User.FindFirstValue("userId"));
         var user = await _context.Users.FindAsync(userId);
         string? email = user?.Email;
 
@@ -204,6 +200,11 @@ public class PackageController : ControllerBase
                 PickupSlot = p.PickupSlot,
                 CurrentStatus = p.CurrentStatus,
                 CreatedAt = p.CreatedAt,
+                Value = p.Value,
+                Weight = p.Weight,
+                SenderPhoneNumber = p.SenderPhoneNumber,
+                RecipientPhoneNumber = p.RecipientPhoneNumber,
+                RecipientEmail = p.RecipientEmail,
                 IsSender = p.SenderId == userId
             })
             .ToListAsync();

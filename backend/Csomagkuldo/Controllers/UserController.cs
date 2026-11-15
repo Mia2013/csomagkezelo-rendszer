@@ -1,4 +1,5 @@
 using Csomagkuldo.Data;
+using System.Security.Claims;
 using Csomagkuldo.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ namespace Csomagkuldo.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            if (User.FindFirst("id")?.Value != id.ToString() && !User.IsInRole("Admin"))
+            if (User.FindFirstValue("userId") != id.ToString() && !User.IsInRole("Admin"))
             {
                 return Forbid();
             }

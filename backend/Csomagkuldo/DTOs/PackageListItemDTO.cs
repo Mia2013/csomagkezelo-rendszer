@@ -15,5 +15,10 @@ public class PackageListItemDTO
     public string? PickupSlot { get; set; }
     public PackageStatus CurrentStatus { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int Value { get; set; }
+    public int Weight { get; set; }
+    public string? SenderPhoneNumber { get; set; }
+    public string? RecipientPhoneNumber { get; set; }
+    public string? RecipientEmail { get; set; }
     public bool IsSender { get; set; }
 }

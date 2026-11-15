@@ -22,6 +22,7 @@ export const endpoints = {
   deliverytasks: `${controllers.PACKAGE}/deliverytasks`,
   pickuppackage: `${controllers.PACKAGE}/pickuppackage`,
   user: `${controllers.USER}`,
+  updatePackage: `${controllers.PACKAGE}/update`,
   
 };
 

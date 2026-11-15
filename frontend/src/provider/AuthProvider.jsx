@@ -70,7 +70,7 @@ const AuthProvider = ({ children }) => {
     };
 
     const updateUser = (formData) => {
-        putData(`${endpoints.updateUser}/${user.id}`, formData)
+        putData(`${endpoints.updateUser}/${user.userId}`, formData)
             .then(updatedUser => {
                 setUser(prev => ({ ...prev, ...updatedUser }));
                 setAlert({ message: "Profil sikeresen frissítve!", severity: "success" });

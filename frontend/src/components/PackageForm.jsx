@@ -75,9 +75,9 @@ const PackageForm = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      getUserById(user.id);
+      getUserById(user.userId);
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.userId]);
 
   const handleChange = (e) =>
     setData({ ...data, [e.target.name]: e.target.value });
