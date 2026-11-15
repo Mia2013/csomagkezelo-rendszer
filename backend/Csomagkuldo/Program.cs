@@ -45,6 +45,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         NameClaimType = "id",
         RoleClaimType = "role"
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            if (context.AuthenticateFailure is SecurityTokenExpiredException)
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = 440;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 builder.Services.AddAuthorization();
 builder.Services.AddControllers()

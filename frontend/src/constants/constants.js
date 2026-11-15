@@ -29,3 +29,5 @@ export const PACKAGE_STATUS_COLORS = {
     Delivered: "success",
     FailedDelivery: "error",
 };
+
+export const EXPIRED_JWT_STATUS = 440;
