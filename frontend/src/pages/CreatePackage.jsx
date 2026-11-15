@@ -1,10 +1,13 @@
 import { Box, Container } from "@mui/material";
+import LocalShipping from "@mui/icons-material/LocalShipping";
+import PageHeader from "../components/PageHeader";
 import PackageForm from "../components/PackageForm";
 
 const CreatePackage = () => {
   return (
     <Box>
-      <Container maxwidth="xl">
+      <PageHeader icon={<LocalShipping />} title="Csomagfeladás" />
+      <Container>
         <PackageForm />
       </Container>
     </Box>
