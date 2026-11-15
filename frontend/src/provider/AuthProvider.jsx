@@ -1,14 +1,27 @@
-import { useContext, createContext, useState, useEffect, useMemo } from "react";
+import { useContext, createContext, useState, useEffect, useLayoutEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { jwtDecode } from "jwt-decode";
 import { instance, postData, putData, endpoints } from "../api/apiCalls";
 import { ROLES } from "../constants/constants";
 import { AuthContext } from "./AuthContext";
+import { EXPIRED_JWT_STATUS } from "../constants/constants";
 
 
 const AuthProvider = ({ children }) => {
-    const [token, setToken] = useState(localStorage.getItem("csomagkezelo_token") || "");
-    const [user, setUser] = useState({ role: ROLES.GUEST });
+    const [token, setToken] = useState(() => {
+        const saved = localStorage.getItem("csomagkezelo_token") || "";
+        if (saved) instance.defaults.headers.common["Authorization"] = `Bearer ${saved}`;
+        return saved;
+    });
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem("csomagkezelo_token");
+        if (!saved) return { role: ROLES.GUEST };
+        try {
+            return jwtDecode(saved);
+        } catch {
+            return { role: ROLES.GUEST };
+        }
+    });
     const [alert, setAlert] = useState();
     const navigate = useNavigate();
 
@@ -51,13 +64,13 @@ const AuthProvider = ({ children }) => {
         postData(endpoints.registerUser, formData)
             .then(() => {
                 setAlert({ message: "Sikeres regisztráció!", severity: "success" });
-                navigate("/login");
+                navigate("/#belepes");
             })
             .catch(e => setAlert({ message: e.message || "Hiba a regisztráció során!", severity: "error" }));
     };
 
     const updateUser = (formData) => {
-        putData(`${endpoints.updateUser}/${user.id}`, formData)
+        putData(`${endpoints.updateUser}/${user.userId}`, formData)
             .then(updatedUser => {
                 setUser(prev => ({ ...prev, ...updatedUser }));
                 setAlert({ message: "Profil sikeresen frissítve!", severity: "success" });
@@ -69,16 +82,37 @@ const AuthProvider = ({ children }) => {
         setToken("");
         localStorage.removeItem("csomagkezelo_token");
         delete instance.defaults.headers.common["Authorization"];
-         setAlert({ message: "Sikeres kijelentkezés!", severity: "info" });
+        setAlert({ message: "Sikeres kijelentkezés!", severity: "info" });
         setUser({ role: ROLES.GUEST });
         navigate("/");
     };
 
-  
+    const expireSession = () => {
+        setToken("");
+        localStorage.removeItem("csomagkezelo_token");
+        delete instance.defaults.headers.common["Authorization"];
+        setUser({ role: ROLES.GUEST });
+        setAlert({ message: "A munkamenet lejárt, jelentkezz be újra!", severity: "warning" });
+        navigate("/#belepes");
+    };
+
+    useLayoutEffect(() => {
+        const interceptorId = instance.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response?.status === EXPIRED_JWT_STATUS) {
+                    expireSession();
+                }
+                return Promise.reject(error);
+            }
+        );
+        return () => instance.interceptors.response.eject(interceptorId);
+    }, []);
+
     useEffect(() => {
         if (token) {
             setupSession(token);
-        } 
+        }
         // eslint-disable-next-line 
     }, []);
 

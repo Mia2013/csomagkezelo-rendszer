@@ -3,7 +3,7 @@
 [Oo]bj/
 *.user
 *.suo
-/docs
+
 
 **/appsettings.Local.json
 **/node_modules/

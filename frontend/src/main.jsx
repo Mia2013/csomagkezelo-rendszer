@@ -6,6 +6,7 @@ import "./index.css";
 import Layout from "./pages/Layout.jsx";
 import { allPages } from "./pages/pages.js";
 import AuthProvider from "./provider/AuthProvider";
+import ProtectedRoute from "./pages/ProtectedRoute.jsx";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +17,11 @@ const router = createBrowserRouter([
     ),
     children: allPages.map((p) => ({
       path: p.path,
-      Component: p.component,
+      element: (
+        <ProtectedRoute roles={p.roles}>
+          <p.component />
+        </ProtectedRoute>
+      ),
     })),
   },
 ]);

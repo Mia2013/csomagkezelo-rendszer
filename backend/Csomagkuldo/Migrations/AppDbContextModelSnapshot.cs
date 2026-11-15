@@ -17,10 +17,43 @@ namespace Csomagkuldo.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Csomagkuldo.Models.CourierCar", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CourierId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LicensePlate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Manufacturer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourierId");
+
+                    b.ToTable("CourierCars");
+                });
 
             modelBuilder.Entity("Csomagkuldo.Models.CourierTask", b =>
                 {
@@ -117,7 +150,7 @@ namespace Csomagkuldo.Migrations
 
                     b.Property<string>("Size")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TrackingNumber")
                         .IsRequired()
@@ -137,6 +170,8 @@ namespace Csomagkuldo.Migrations
                     b.HasIndex("RecipientId");
 
                     b.HasIndex("SenderId");
+
+                    b.HasIndex("Size");
 
                     b.HasIndex("TrackingNumber")
                         .IsUnique();
@@ -341,6 +376,44 @@ namespace Csomagkuldo.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ShippingFee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CapacityUnit")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MaxSize")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RegisteredPrice")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("UnregisteredPrice")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShippingFees");
+                });
+
+            modelBuilder.Entity("Csomagkuldo.Models.CourierCar", b =>
+                {
+                    b.HasOne("Csomagkuldo.Models.User", "Courier")
+                        .WithMany("CourierCar")
+                        .HasForeignKey("CourierId");
+
+                    b.Navigation("Courier");
+                });
+
             modelBuilder.Entity("Csomagkuldo.Models.CourierTask", b =>
                 {
                     b.HasOne("Csomagkuldo.Models.User", "Courier")
@@ -374,11 +447,20 @@ namespace Csomagkuldo.Migrations
                         .WithMany("SentPackages")
                         .HasForeignKey("SenderId");
 
+                    b.HasOne("ShippingFee", "ShippingFee")
+                        .WithMany("Packages")
+                        .HasForeignKey("Size")
+                        .HasPrincipalKey("Type")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Courier");
 
                     b.Navigation("Recipient");
 
                     b.Navigation("Sender");
+
+                    b.Navigation("ShippingFee");
                 });
 
             modelBuilder.Entity("Csomagkuldo.Models.PackageStatusHistory", b =>
@@ -436,6 +518,8 @@ namespace Csomagkuldo.Migrations
                 {
                     b.Navigation("AssignedPackages");
 
+                    b.Navigation("CourierCar");
+
                     b.Navigation("CourierTasks");
 
                     b.Navigation("PackageStatusChanges");
@@ -443,6 +527,11 @@ namespace Csomagkuldo.Migrations
                     b.Navigation("ReceivedPackages");
 
                     b.Navigation("SentPackages");
+                });
+
+            modelBuilder.Entity("ShippingFee", b =>
+                {
+                    b.Navigation("Packages");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Csomagkuldo.Controllers;
 
@@ -22,6 +23,7 @@ public class PackageController : ControllerBase
         _context = context;
     }
 
+    //CSOMAG ELŐJEGYZÉS LÉTREHOZÁSA
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Create(CreatePackageDTO dto)
@@ -38,19 +40,16 @@ public class PackageController : ControllerBase
         // A hibás tokennel érkező kérést nem mentjük el vendégfeladásként.
         if (Request.Headers.ContainsKey("Authorization"))
         {
-            var authentication = await HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-            if (!authentication.Succeeded ||
-                !int.TryParse(authentication.Principal?.FindFirst("id")?.Value, out int userId) ||
-                !await _context.Users.AnyAsync(user => user.Id == userId))
+            if (!User.Identity.IsAuthenticated)
             {
                 return Unauthorized("A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra!");
             }
-            senderId = userId;
+            senderId = int.Parse(User.FindFirstValue("userId"));
         }
 
         var package = new Package
         {
-            TrackingNumber = Guid.NewGuid().ToString(),
+            TrackingNumber = Guid.NewGuid().ToString("N")[..10].ToUpper(),
             SenderId = senderId,
             SenderName = dto.SenderName.Trim(),
             SenderAddress = dto.SenderAddress.Trim(),
@@ -90,12 +89,12 @@ public class PackageController : ControllerBase
     [HttpGet("track")]
     public async Task<IActionResult> Track([FromQuery] string trackingNumber)
     {
-        if (!Guid.TryParse(trackingNumber?.Trim(), out Guid number))
+        string normalizedNumber = trackingNumber?.Trim() ?? string.Empty;
+        if (normalizedNumber.Length == 0)
         {
             return BadRequest("Adj meg egy érvényes csomagazonosítót!");
         }
 
-        string normalizedNumber = number.ToString();
         var package = await _context.Packages.AsNoTracking()
             .Where(item => item.TrackingNumber == normalizedNumber)
             .Select(item => new { item.Id, item.TrackingNumber })
@@ -130,4 +129,87 @@ public class PackageController : ControllerBase
             History = history
         });
     }
+    
+    // REGISZTRÁLT FELHASZNÁLÓ CSOMAG MÓDOSÍTÁSA
+    [Authorize]
+    [HttpPut("update/{packageId}")]
+    public async Task<IActionResult> UpdatePackage(int packageId, [FromBody] UpdatePackageDTO dto)
+    {
+        var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageId);
+        if (package == null)
+        {
+            return NotFound("A csomag nem található!");
+        }
+
+        if (package.SenderId.ToString() != User.FindFirstValue("userId"))
+        {
+            return BadRequest("Csak a saját előjegyzett csomagodat módosíthatod!");
+        }
+
+  
+        if (package.CurrentStatus != PackageStatus.PreBooked)
+        {
+            return BadRequest("A csomag már nem módosítható!");
+        }
+
+        if (DateTime.UtcNow.Date >= package.PickupDate.Date)
+        {
+            return BadRequest("A csomag adatait legkésőbb a felvétel előtti napig lehet módoítani!");
+        }
+        if (!string.IsNullOrWhiteSpace(dto.PickupSlot))
+        {
+            package.PickupSlot = dto.PickupSlot;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.RecipientAddress))
+        {
+            package.RecipientAddress = dto.RecipientAddress;
+        }
+
+        if (dto.Size.HasValue)
+        {
+            package.Size = dto.Size.Value;
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok("A csomag adatai sikeresen frissítve!");
+    }
+
+    //REGISZTRÁLT FELHASZNÁLÓ CSOMAGJAINAK LISTÁZÁSA
+    [Authorize]
+    [HttpGet("getAllByUser")]
+    public async Task<IActionResult> GetAllByUser()
+    {
+        int userId = int.Parse(User.FindFirstValue("userId"));
+        var user = await _context.Users.FindAsync(userId);
+        string? email = user?.Email;
+
+        var packages = await _context.Packages
+            .Where(p => p.SenderId == userId || (email != null && p.RecipientEmail == email))
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new PackageListItemDTO
+            {
+                Id = p.Id,
+                TrackingNumber = p.TrackingNumber,
+                SenderName = p.SenderName,
+                SenderAddress = p.SenderAddress,
+                RecipientName = p.RecipientName,
+                RecipientAddress = p.RecipientAddress,
+                Size = p.Size,
+                PickupDate = p.PickupDate,
+                PickupSlot = p.PickupSlot,
+                CurrentStatus = p.CurrentStatus,
+                CreatedAt = p.CreatedAt,
+                Value = p.Value,
+                Weight = p.Weight,
+                SenderPhoneNumber = p.SenderPhoneNumber,
+                RecipientPhoneNumber = p.RecipientPhoneNumber,
+                RecipientEmail = p.RecipientEmail,
+                IsSender = p.SenderId == userId
+            })
+            .ToListAsync();
+
+        return Ok(packages);
+    }
+
 }

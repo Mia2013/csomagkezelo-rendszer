@@ -1,9 +1,11 @@
 using Csomagkuldo.Data;
 using Csomagkuldo.Models;
+using Csomagkuldo.OpenApi;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -43,18 +45,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         NameClaimType = "id",
         RoleClaimType = "role"
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            if (context.AuthenticateFailure is SecurityTokenExpiredException)
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = 440;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 builder.Services.AddAuthorization();
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddCors(options => options.AddPolicy("Frontend", policy =>
     policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod()));
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddDocumentTransformer<BearerSecuritySchemeTransformer>());
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 app.UseExceptionHandler();
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => options.AddPreferredSecuritySchemes(JwtBearerDefaults.AuthenticationScheme));
+}
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
 app.UseAuthentication();

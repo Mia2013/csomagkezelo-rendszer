@@ -3,6 +3,7 @@ import Home from "./Home.jsx";
 import Register from "./Register.jsx";
 
 import CreatePackage from "./CreatePackage.jsx";
+import MyPackages from "./MyPackages.jsx";
 
 export const allPages = [
   {
@@ -29,5 +30,13 @@ export const allPages = [
     component: CreatePackage,
     showInNavbar: true,
     roles: ALL_ROLES,
+  },
+  {
+    id: "myPackages",
+    name: "Csomagjaim",
+    path: "/csomagjaim",
+    component: MyPackages,
+    showInNavbar: true,
+    roles: [ROLES.CUSTOMER],
   },
 ];

@@ -11,8 +11,19 @@ export const endpoints = {
   loginUser: `${controllers.AUTH}/login`,
   createPackage: `${controllers.PACKAGE}`,
   trackPackage: `${controllers.PACKAGE}/track`,
+  getAllByUser: `${controllers.PACKAGE}/getAllByUser`,
   getUserById: `${controllers.USER}`,
   updateUser: `${controllers.USER}/update`,
+  unassignedPrebooked: `${controllers.PACKAGE}/unassignedPrebooked`,
+  assignforpickup: `${controllers.PACKAGE}/assignforpickup`,
+  assignfordelivery: `${controllers.PACKAGE}/assignfordelivery`,
+  receivetowarehouse: `${controllers.PACKAGE}/receivetowarehouse`,
+  pickuptasks: `${controllers.PACKAGE}/pickuptasks`,
+  deliverytasks: `${controllers.PACKAGE}/deliverytasks`,
+  pickuppackage: `${controllers.PACKAGE}/pickuppackage`,
+  user: `${controllers.USER}`,
+  updatePackage: `${controllers.PACKAGE}/update`,
+  
 };
 
 export const instance = axios.create({
