@@ -260,7 +260,7 @@ namespace Csomagkuldo.Controllers
             return Ok();
         }
 
-        
+        //AUTÓ TÖRLÉSE
         [HttpDelete("cars/{id}")]
         public async Task<IActionResult> DeleteCar(int id)
         {
@@ -268,6 +268,152 @@ namespace Csomagkuldo.Controllers
             if (car == null) return NotFound();
 
             _context.CourierCars.Remove(car);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+        
+        //ÖSSZES CSOMAG LEKÉRÉSE
+        [HttpGet("packages")]
+        public async Task<IActionResult> GetAllPackages()
+        {
+            var packages = await _context.Packages
+                .Select(p => new PackageListItemDTO
+                {
+                    Id = p.Id,
+                    TrackingNumber = p.TrackingNumber,
+                    SenderPhoneNumber = p.SenderPhoneNumber,
+                    RecipientPhoneNumber = p.RecipientPhoneNumber,
+                    RecipientEmail = p.RecipientEmail,
+                    PickupSlot = p.PickupSlot,
+                    Value = p.Value,
+                    Weight = p.Weight,
+                    Size = p.Size,
+                    SenderName = p.SenderName,
+                    SenderAddress = p.SenderAddress,
+                    RecipientName = p.RecipientName,
+                    RecipientAddress = p.RecipientAddress,
+                    CurrentStatus = p.CurrentStatus,
+                    PickupDate = p.PickupDate,
+                    CreatedAt = p.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(packages);
+        }
+        //EGY CSOMAG ADATAINAK LEKÉRÉSE
+        [HttpGet("packages/{id}")]
+        public async Task<IActionResult> GetPackage(int id)
+        {
+            var package = await _context.Packages
+                .Where(p => p.Id == id)
+                .Select(p => new PackageListItemDTO
+                {
+                    Id = p.Id,
+                    TrackingNumber = p.TrackingNumber,
+                    SenderPhoneNumber = p.SenderPhoneNumber,
+                    RecipientPhoneNumber = p.RecipientPhoneNumber,
+                    RecipientEmail = p.RecipientEmail,
+                    PickupSlot = p.PickupSlot,
+                    Value = p.Value,
+                    Weight = p.Weight,
+                    Size = p.Size,
+                    SenderName = p.SenderName,
+                    SenderAddress = p.SenderAddress,
+                    RecipientName = p.RecipientName,
+                    RecipientAddress = p.RecipientAddress,
+                    CurrentStatus = p.CurrentStatus,
+                    PickupDate = p.PickupDate,
+                    CreatedAt = p.CreatedAt
+                })
+                .FirstOrDefaultAsync();
+
+            if (package == null) return NotFound();
+
+            return Ok(package);
+        }
+        //CSOMAG LÉTREHOZÁSA ADMIN ÁLTAL
+        [HttpPost("packages")]
+        public async Task<IActionResult> CreatePackage([FromBody] AdminPackageDTO dto)
+        {
+            DateTime now = DateTime.UtcNow;
+
+            var package = new Package
+            {
+                TrackingNumber = Guid.NewGuid().ToString("N")[..10].ToUpper(), 
+                SenderId = dto.SenderId, 
+                SenderName = dto.SenderName.Trim(),
+                SenderAddress = dto.SenderAddress.Trim(),
+                SenderPhoneNumber = dto.SenderPhoneNumber?.Trim(),
+                RecipientId = dto.RecipientId,
+                RecipientName = dto.RecipientName.Trim(),
+                RecipientAddress = dto.RecipientAddress.Trim(),
+                RecipientPhoneNumber = dto.RecipientPhoneNumber?.Trim(),
+                RecipientEmail = dto.RecipientEmail?.Trim(),
+                Value = dto.Value,
+                Weight = dto.Weight,
+                Size = dto.Size,
+                PickupDate = dto.PickupDate,
+                PickupSlot = dto.PickupSlot,
+                CurrentStatus = dto.CurrentStatus,
+                CourierId = dto.CourierId,
+                CreatedAt = now
+            };
+
+            
+            package.StatusHistory.Add(new PackageStatusHistory
+            {
+                Status = package.CurrentStatus,
+                ChangedAt = now
+            });
+
+            _context.Packages.Add(package);
+            await _context.SaveChangesAsync();
+
+            return Ok(new PackageCreatedDTO
+            {
+                TrackingNumber = package.TrackingNumber,
+                Status = package.CurrentStatus,
+                CreatedAt = package.CreatedAt
+            });
+        }
+
+        //CSOMAG ADATAINAK MÓDOSÍTÁSA
+        [HttpPut("packages/{id}")]
+        public async Task<IActionResult> UpdatePackage(int id, [FromBody] AdminPackageDTO dto)
+        {
+            var package = await _context.Packages.FindAsync(id);
+            if (package == null) return NotFound();
+
+            package.SenderPhoneNumber = dto.SenderPhoneNumber;
+            package.RecipientPhoneNumber = dto.RecipientPhoneNumber;
+            package.RecipientEmail = dto.RecipientEmail;
+            package.PickupSlot = dto.PickupSlot;
+            package.Value = dto.Value;
+            package.Weight = dto.Weight;
+            package.Size = dto.Size;
+            package.SenderId = dto.SenderId;
+            package.SenderName = dto.SenderName;
+            package.SenderAddress = dto.SenderAddress;
+            package.RecipientId = dto.RecipientId;
+            package.RecipientName = dto.RecipientName;
+            package.RecipientAddress = dto.RecipientAddress;
+            package.CurrentStatus = dto.CurrentStatus;
+            package.CourierId = dto.CourierId;
+            package.PickupDate = dto.PickupDate;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+        //CSOMAG TÖRLÉSE
+        [HttpDelete("packages/{id}")]
+        public async Task<IActionResult> DeletePackage(int id)
+        {
+            var package = await _context.Packages.FindAsync(id);
+            if (package == null) return NotFound();
+
+            _context.Packages.Remove(package);
             await _context.SaveChangesAsync();
 
             return Ok();
