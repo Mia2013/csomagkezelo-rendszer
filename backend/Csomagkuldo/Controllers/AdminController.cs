@@ -73,7 +73,7 @@ namespace Csomagkuldo.Controllers
             return Ok("A csomag sikeresen másik futárhoz lett rendelve!");
         }
         //ÚJ FELHASZNÁLÓ LÉTREHOZÁSA
-        [HttpPost]
+        [HttpPost("users")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO dto)
         {
             var user = new User
@@ -95,8 +95,8 @@ namespace Csomagkuldo.Controllers
 
             return Ok(user);
         }
-        //FELHASZNÁLÓK LEKÉRÉSE
-        [HttpGet]
+        //ÖSSZES FELHASZNÁLÓK LEKÉRÉSE
+        [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _context.Users
@@ -114,7 +114,30 @@ namespace Csomagkuldo.Controllers
 
             return Ok(users);
         }
-        [HttpPut("{id}")]
+        //EGY FELHASZNÁLÓ ADATAINAK LEKÉRÉSE
+        [HttpGet("users/{id}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if(user==null)
+            {
+                return BadRequest("A felhasználó nem található");
+            }
+            var userProfile=new UserProfileDTO { 
+
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Address = user.Address,
+                    Role = user.Role
+                };
+                
+
+            return Ok(userProfile);
+        }
+        //FELHASZNÁLÓ ADATAINAK MÓDOSÍTÁSA
+        [HttpPut("users/{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDTO dto)
         {
             var user = await _context.Users.FindAsync(id);
@@ -141,7 +164,8 @@ namespace Csomagkuldo.Controllers
 
             return Ok();
         }
-        [HttpDelete("{id}")]
+        //FELHASZNÁLÓ TÖRLÉSE
+        [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -152,5 +176,103 @@ namespace Csomagkuldo.Controllers
 
             return Ok();
         }
+        //ÖSSZES AZTÓ ADATAINAK LEKÉRÉSE
+        [HttpGet("cars")]
+        public async Task<IActionResult> GetAllCars()
+        {
+            var cars = await _context.CourierCars
+                .Select(c => new CourierCarDTO
+                {
+                    Id = c.Id,
+                    Capacity = c.Capacity,
+                    CourierId = c.CourierId,
+                    CourierName = c.Courier != null ? c.Courier.LastName + " " + c.Courier.FirstName : null,
+                    LicensePlate = c.LicensePlate,
+                    Manufacturer = c.Manufacturer,
+                    Model = c.Model,
+                    Year = c.Year
+                })
+                .ToListAsync();
+
+            return Ok(cars);
+        }
+
+        //EGY AUTÓ ADATAINAK LEKÉRÉSE
+        [HttpGet("cars/{id}")]
+        public async Task<IActionResult> GetCar(int id)
+        {
+            var car = await _context.CourierCars
+                .Where(c => c.Id == id)
+                .Select(c => new CourierCarDTO
+                {
+                    Id = c.Id,
+                    Capacity = c.Capacity,
+                    CourierId = c.CourierId,
+                    CourierName = c.Courier != null ? c.Courier.LastName + " " + c.Courier.FirstName : null,
+                    LicensePlate = c.LicensePlate,
+                    Manufacturer = c.Manufacturer,
+                    Model = c.Model,
+                    Year = c.Year
+                })
+                .FirstOrDefaultAsync();
+
+            if (car == null) return NotFound();
+
+            return Ok(car);
+        }
+
+        //ÚJ AUTÓ HOZZÁADÁSA
+        [HttpPost("cars")]
+        public async Task<IActionResult> CreateCar([FromBody] CreateUpdateCarDTO dto)
+        {
+            var car = new CourierCar
+            {
+                Capacity = dto.Capacity,
+                CourierId = dto.CourierId,
+                LicensePlate = dto.LicensePlate,
+                Manufacturer = dto.Manufacturer,
+                Model = dto.Model,
+                Year = dto.Year
+            };
+
+            _context.CourierCars.Add(car);
+            await _context.SaveChangesAsync();
+
+            return Ok(car);
+        }
+
+        //KOCSI ADATAINAK MÓDOSÍTÁSA
+        [HttpPut("cars/{id}")]
+        public async Task<IActionResult> UpdateCar(int id, [FromBody] CreateUpdateCarDTO dto)
+        {
+            var car = await _context.CourierCars.FindAsync(id);
+            if (car == null) return NotFound();
+
+            car.Capacity = dto.Capacity;
+            car.CourierId = dto.CourierId;
+            car.LicensePlate = dto.LicensePlate;
+            car.Manufacturer = dto.Manufacturer;
+            car.Model = dto.Model;
+            car.Year = dto.Year;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        
+        [HttpDelete("cars/{id}")]
+        public async Task<IActionResult> DeleteCar(int id)
+        {
+            var car = await _context.CourierCars.FindAsync(id);
+            if (car == null) return NotFound();
+
+            _context.CourierCars.Remove(car);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
     }
 }
