@@ -132,9 +132,10 @@ public class PackageController : ControllerBase
             History = history
         });
     }
+    
     // REGISZTRÁLT FELHASZNÁLÓ CSOMAG MÓDOSÍTÁSA
     [Authorize]
-    [HttpPut("{packageId}/update")]
+    [HttpPut("update/{packageId}")]
     public async Task<IActionResult> UpdatePackage(int packageId, [FromBody] UpdatePackageDTO dto)
     {
         var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageId);
@@ -152,18 +153,14 @@ public class PackageController : ControllerBase
   
         if (package.CurrentStatus != PackageStatus.PreBooked)
         {
-            return NotFound("Csomag nem található");
+            return BadRequest("A csomag már nem módosítható!");
         }
 
         if (DateTime.UtcNow.Date >= package.PickupDate.Date)
         {
             return BadRequest("A csomag adatait legkésőbb a felvétel előtti napig lehet módoítani!");
         }
-        var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct=> ct.CourierId == courierId);
-
-        var result = await _context.CourierTasks.Where(ct => ct.CourierId == courierId && ct.Status == CourierTaskStatus.Assigned&&ct.Package.CurrentStatus==PackageStatus.AssignedForPickup).ToArrayAsync();
-       
-        return Ok(result switch
+        if (!string.IsNullOrWhiteSpace(dto.PickupSlot))
         {
             package.PickupSlot = dto.PickupSlot;
         }
@@ -175,15 +172,43 @@ public class PackageController : ControllerBase
 
         if (dto.Size.HasValue)
         {
-            return NotFound("Futár nem található!");
+            package.Size = dto.Size.Value;
         }
-        var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.CourierId == courierId);
-
-        var result = await _context.CourierTasks.Where(ct => ct.CourierId == courierId && ct.Status == CourierTaskStatus.Assigned&&ct.Package.CurrentStatus==PackageStatus.AssignedForDelivery).ToArrayAsync();
 
         await _context.SaveChangesAsync();
         return Ok("A csomag adatai sikeresen frissítve!");
     }
 
+    //REGISZTRÁLT FELHASZNÁLÓ CSOMAGJAINAK LISTÁZÁSA
+    [Authorize]
+    [HttpGet("getAllByUser")]
+    public async Task<IActionResult> GetAllByUser()
+    {
+        int userId = int.Parse(User.FindFirst("id")!.Value);
+        var user = await _context.Users.FindAsync(userId);
+        string? email = user?.Email;
+
+        var packages = await _context.Packages
+            .Where(p => p.SenderId == userId || (email != null && p.RecipientEmail == email))
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new PackageListItemDTO
+            {
+                Id = p.Id,
+                TrackingNumber = p.TrackingNumber,
+                SenderName = p.SenderName,
+                SenderAddress = p.SenderAddress,
+                RecipientName = p.RecipientName,
+                RecipientAddress = p.RecipientAddress,
+                Size = p.Size,
+                PickupDate = p.PickupDate,
+                PickupSlot = p.PickupSlot,
+                CurrentStatus = p.CurrentStatus,
+                CreatedAt = p.CreatedAt,
+                IsSender = p.SenderId == userId
+            })
+            .ToListAsync();
+
+        return Ok(packages);
+    }
 
 }

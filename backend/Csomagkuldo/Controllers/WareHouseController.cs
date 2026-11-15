@@ -20,7 +20,7 @@ namespace Csomagkuldo.Controllers
         {
             _context = context;
         }
-        [Authorize(Roles = "WarehouseOperatior,Admin")]
+        [Authorize(Roles = "WarehouseOperator,Admin")]
         [HttpGet("unassignedPrebooked")]
         public async Task<IActionResult> GetUnassignedPrebookedPackages()
         {
@@ -34,7 +34,7 @@ namespace Csomagkuldo.Controllers
         }
         //CSOMAG FUTÁRHOZ RENDELÉSE
         [Authorize(Roles = "WarehouseOperator,Admin")]
-        [HttpPut("{packageid}/assignforpickup")]
+        [HttpPut("assignforpickup/{packageid}")]
         public async Task<IActionResult> AssignCourierToPackage(int packageid, [FromBody] AssignCourierRequestDTO courierdto)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -77,7 +77,7 @@ namespace Csomagkuldo.Controllers
         
         //FUTÁR HOZZÁRENDELÉSE A CSOMAG KISZÁLLÍTÁSÁHOZ
         [Authorize(Roles = "WarehouseOperator,Admin")]
-        [HttpPut("{packageid}/assignfordelivery")]
+        [HttpPut("assignfordelivery/{packageid}")]
         public async Task<IActionResult> Delivery(int packageid, [FromBody] AssignCourierRequestDTO dto)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -118,7 +118,7 @@ namespace Csomagkuldo.Controllers
         }
         //CSOMAG MEGÉRKEZIK A RAKTÁRBA
         [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
-        [HttpPut("{packageid}/receivetowarehouse")]
+        [HttpPut("receivetowarehouse/{packageid}")]
         public async Task<IActionResult> ReceiveToWarehouse(int packageid, [FromBody] CourierDTO dto)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);

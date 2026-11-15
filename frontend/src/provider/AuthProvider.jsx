@@ -59,7 +59,7 @@ const [user, setUser] = useState(() => {
         postData(endpoints.registerUser, formData)
             .then(() => {
                 setAlert({ message: "Sikeres regisztráció!", severity: "success" });
-                navigate("/login");
+                navigate("/#belepes");
             })
             .catch(e => setAlert({ message: e.message || "Hiba a regisztráció során!", severity: "error" }));
     };

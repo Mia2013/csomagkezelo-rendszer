@@ -40,15 +40,29 @@ const RegisterForm = () => {
   const validateForm = (data, confirmPassword) => {
     const errors = {};
 
-    if (!data.userName.trim()) errors.userName = "Felhasználónév kötelező!";
-    if (!data.email.trim()) errors.email = "Email cím kötelező!";
-    if (!data.password.trim()) errors.password = "Jelszó megadása kötelező!";
+    if (!data.userName.trim()) {
+      errors.userName = "Felhasználónév kötelező!";
+    }
+    if (!data.email.trim()) {
+      errors.email = "Email cím kötelező!";
+    }
+    if (!data.password.trim()) {
+      errors.password = "Jelszó megadása kötelező!";
+    } else if (data.password.length < 8) {
+      errors.password = "Jelszónak legalább 8 karakter hosszúnak kell lennie!";
+    }
     if (data.password !== confirmPassword) {
       errors.confirmPassword = "A jelszavak nem egyeznek!";
     }
-    if (!data.lastName.trim()) errors.lastName = "Vezetéknév kötelező!";
-    if (!data.firstName.trim()) errors.firstName = "Keresztnév kötelező!";
-    if (!data.address.trim()) errors.address = "Lakcím kötelező!";
+    if (!data.lastName.trim()) {
+      errors.lastName = "Vezetéknév kötelező!";
+    }
+    if (!data.firstName.trim()) {
+      errors.firstName = "Keresztnév kötelező!";
+    }
+    if (!data.address.trim()) {
+      errors.address = "Lakcím kötelező!";
+    }
 
     return errors;
   };

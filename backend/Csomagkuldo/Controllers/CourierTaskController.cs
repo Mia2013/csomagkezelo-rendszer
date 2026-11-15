@@ -21,7 +21,7 @@ namespace Csomagkuldo.Controllers
         }
         //CSOMAGOT FELVESZI A FELADOTT CSOMAGOT
         [Authorize(Roles = "Courier,Admin")]
-        [HttpPut("{packageid}/pickuppackage")]
+        [HttpPut("pickuppackage/{packageid}")]
         public async Task<IActionResult> Pickup(int packageid, [FromBody] CourierDTO dto)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -64,7 +64,7 @@ namespace Csomagkuldo.Controllers
         }
         //FUTÁR MEGTEKINTHETI A FELVÉTELI FELADATAIT
         [Authorize(Roles = "Courier,Admin")]
-        [HttpGet("{courierid}/pickuptasks")]
+        [HttpGet("pickuptasks/{courierid}")]
         public async Task<IActionResult> GetCourirerPickUpTasks(int courierId)
         {
             var courier = await _context.Users.FindAsync(courierId);
@@ -85,7 +85,7 @@ namespace Csomagkuldo.Controllers
 
         //FUTÁR MEGTEKINTHETI AZ ÖSSZES KISZÁLLÍTÁSI FELADATÁT
         [Authorize(Roles = "Courier,Admin")]
-        [HttpGet("{courierid}/deliverytasks")]
+        [HttpGet("deliverytasks/{courierid}")]
         public async Task<IActionResult> GetCourirerDeiveryTasks(int courierId)
         {
             var courier = await _context.Users.FindAsync(courierId);
@@ -106,7 +106,7 @@ namespace Csomagkuldo.Controllers
         //A FUTÁR FELVESZI A CSOMAGOT ÉS ELINDUL A RAKTÁRBÓL
         
         [Authorize(Roles = "Courier,Admin")]
-        [HttpPut("{packageid}/pickupfromwarehouse")]
+        [HttpPut("pickupfromwarehouse/{packageid}")]
         public async Task<IActionResult> PickupFromWarehouse(int packageid, [FromBody] CourierDTO dto)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -144,7 +144,7 @@ namespace Csomagkuldo.Controllers
         }
         //CsOMAG KÉZBESÍTÉSE
         [Authorize(Roles = "Courier,Admin")]
-        [HttpPut("{packageid}/deliver")]
+        [HttpPut("deliver/{packageid}")]
         public async Task<IActionResult> DeliverPackage(int packageid, [FromBody] CourierDTO dto)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
@@ -189,7 +189,7 @@ namespace Csomagkuldo.Controllers
         }
         // FUTÁR SZÁLLÍTÁSI TÖRTÉNETE NAPI / HETI / HAVI 
         [Authorize(Roles = "Courier,Admin")]
-        [HttpGet("{courierId}/history")]
+        [HttpGet("history/{courierId}")]
         public async Task<IActionResult> GetCourierHistory(int courierId, [FromQuery] string intervall)
         {
             var courier = await _context.Users.FindAsync(courierId);

@@ -11,6 +11,7 @@ export const endpoints = {
   loginUser: `${controllers.AUTH}/login`,
   createPackage: `${controllers.PACKAGE}`,
   trackPackage: `${controllers.PACKAGE}/track`,
+  getAllByUser: `${controllers.PACKAGE}/getAllByUser`,
   getUserById: `${controllers.USER}`,
   updateUser: `${controllers.USER}/update`,
   unassignedPrebooked: `${controllers.PACKAGE}/unassignedPrebooked`,

@@ -177,7 +177,7 @@ const PackageForm = () => {
 
   return (
     <Paper sx={{ p: 4, my: 4 }}>
-      <Typography variant="h5" component="h1" gutterBottom align="center">
+      <Typography variant="h5" gutterBottom align="center">
         Csomag előjegyzése
       </Typography>
 

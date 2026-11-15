@@ -18,7 +18,7 @@ namespace Csomagkuldo.Controllers
         }
         //MÁSIK FUTÁRHOZ FUTÁRHOZ RENDELÉS
         [Authorize(Roles = "Admin")]
-        [HttpPut("packages/{packageid}/reassign")]
+        [HttpPut("packages/reassign/{packageid}")]
         public async Task<IActionResult> ReassignCourier(int packageid, [FromBody] AssignCourierRequestDTO dto)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
