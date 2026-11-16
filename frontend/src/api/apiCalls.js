@@ -5,6 +5,7 @@ export const controllers = {
   PACKAGE: "Package",
   USER: "User",
   WAREHOUSE: "WareHouse",
+  COURIER: "CourierTask",
 };
 
 export const endpoints = {
@@ -19,9 +20,12 @@ export const endpoints = {
   assignforpickup: `${controllers.WAREHOUSE}/assignforpickup`,
   assignfordelivery: `${controllers.WAREHOUSE}/assignfordelivery`,
   receivetowarehouse: `${controllers.WAREHOUSE}/receivetowarehouse`,
-  pickuptasks: `${controllers.PACKAGE}/pickuptasks`,
-  deliverytasks: `${controllers.PACKAGE}/deliverytasks`,
-  pickuppackage: `${controllers.PACKAGE}/pickuppackage`,
+  pickuptasks: `${controllers.COURIER}/pickuptasks`,
+  deliverytasks: `${controllers.COURIER}/deliverytasks`,
+  pickuppackage: `${controllers.COURIER}/pickuppackage`,
+  pickupfromwarehouse: `${controllers.COURIER}/pickupfromwarehouse`,
+  deliver: `${controllers.COURIER}/deliver`,
+  history: `${controllers.COURIER}/history`,
   user: `${controllers.USER}`,
   updatePackage: `${controllers.PACKAGE}/update`,
   

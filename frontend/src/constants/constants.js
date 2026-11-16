@@ -31,3 +31,10 @@ export const PACKAGE_STATUS_COLORS = {
 };
 
 export const EXPIRED_JWT_STATUS = 440;
+
+export const WEEKDAYS = ["vasárnap", "hétfő", "kedd", "szerda", "csütörtök", "péntek", "szombat"];
+
+export const TASK_TYPES = {
+  Pickup: { label: "Felvétel", color: "primary" },
+  Delivery: { label: "Kiszállítás", color: "secondary" },
+};
