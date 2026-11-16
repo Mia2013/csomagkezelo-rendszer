@@ -5,6 +5,7 @@ import Register from "./Register.jsx";
 import CreatePackage from "./CreatePackage.jsx";
 import MyPackages from "./MyPackages.jsx";
 import WarehousePage from "./Warehouse.jsx";
+import CourierPage from "./Courier.jsx";
 
 export const allPages = [
   {
@@ -47,5 +48,13 @@ export const allPages = [
     component: WarehousePage,
     showInNavbar: true,
     roles: [ROLES.WAREHOUSE_OPERATOR, ROLES.ADMIN],
+  },
+  {
+    id: "courier",
+    name: "Futár",
+    path: "/futar",
+    component: CourierPage,
+    showInNavbar: true,
+    roles: [ROLES.COURIER, ROLES.ADMIN],
   },
 ];

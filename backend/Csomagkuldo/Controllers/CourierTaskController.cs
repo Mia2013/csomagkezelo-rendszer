@@ -34,14 +34,14 @@ namespace Csomagkuldo.Controllers
             {
                 return NotFound("Futár nem található");
             }
-            
+
             var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.PackageId == packageid && ct.CourierId == dto.CourierId&&ct.Status == CourierTaskStatus.Assigned);
-           
+
             if (couriertask == null)
             {
                 return NotFound("A futárhoz nem tartozik ilyen feladat.");
             }
-           
+
             var couriercar=await _context.CourierCars.FirstOrDefaultAsync(c=>c.CourierId==dto.CourierId);
 
             if (couriercar == null)
@@ -58,35 +58,47 @@ namespace Csomagkuldo.Controllers
                 Status = PackageStatus.InTransitToWarehouse,
                 ChangedAt = DateTime.UtcNow
             });
-           
+
             await _context.SaveChangesAsync();
             return Ok("Csomag sikeresen felvéve!");
         }
         //FUTÁR MEGTEKINTHETI A FELVÉTELI FELADATAIT
         [Authorize(Roles = "Courier,Admin")]
         [HttpGet("pickuptasks/{courierid}")]
-        public async Task<IActionResult> GetCourirerPickUpTasks(int courierId)
+        public async Task<ActionResult<CourierTaskDTO[]>> GetCourirerPickUpTasks(int courierId)
         {
             var courier = await _context.Users.FindAsync(courierId);
             if (courier == null)
             {
                 return NotFound("Futár nem található!");
             }
-            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(ct => ct.CourierId == courierId);
+            var result = await _context.CourierTasks
+                .Where(ct => ct.CourierId == courierId && ct.Status == CourierTaskStatus.Assigned && ct.Package.CurrentStatus == PackageStatus.AssignedForPickup)
+                .Select(ct => new CourierTaskDTO
+                {
+                    Id = ct.Id,
+                    PackageId = ct.PackageId,
+                    TaskType = ct.TaskType,
+                    Status = ct.Status,
+                    AssignmentTime = ct.AssignmentTime,
+                    TrackingNumber = ct.Package.TrackingNumber,
+                    SenderName = ct.Package.SenderName,
+                    SenderAddress = ct.Package.SenderAddress,
+                    RecipientName = ct.Package.RecipientName,
+                    RecipientAddress = ct.Package.RecipientAddress,
+                    Size = ct.Package.Size,
+                    PickupDate = ct.Package.PickupDate,
+                    PickupSlot = ct.Package.PickupSlot
+                })
+                .ToArrayAsync();
 
-            var result = await _context.CourierTasks.Where(ct => ct.CourierId == courierId && ct.Status == CourierTaskStatus.Assigned && ct.Package.CurrentStatus == PackageStatus.AssignedForPickup).ToArrayAsync();
-
-            return Ok(result switch
-            {
-                null => "Jelenleg nincs kijelölt feladat!",
-                _ => "A feladatok sikeresen lekérve!"
-            });
+            return Ok(result);
         }
 
         //FUTÁR MEGTEKINTHETI AZ ÖSSZES KISZÁLLÍTÁSI FELADATÁT
         [Authorize(Roles = "Courier,Admin")]
         [HttpGet("deliverytasks/{courierid}")]
-        public async Task<IActionResult> GetCourirerDeiveryTasks(int courierId)
+        public async Task<ActionResult<CourierTaskDTO[]>> GetCourirerDeiveryTasks(int courierId)
         {
             var courier = await _context.Users.FindAsync(courierId);
             if (courier == null)
@@ -94,17 +106,32 @@ namespace Csomagkuldo.Controllers
                 return NotFound("Futár nem található!");
             }
 
-            var result = await _context.CourierTasks.Where(ct => ct.CourierId == courierId && ct.Status == CourierTaskStatus.Assigned && ct.Package.CurrentStatus == PackageStatus.AssignedForDelivery).ToArrayAsync();
-            if(!result.Any())
-            {
-                return Ok("Jelenleg nincs kijelölt feladat!");
-            }
-            return Ok(result);
-           
+            var result = await _context.CourierTasks
+                .Where(ct => ct.CourierId == courierId && ((ct.Status == CourierTaskStatus.Assigned && ct.Package.CurrentStatus == PackageStatus.AssignedForDelivery) || (ct.Status == CourierTaskStatus.InProgress && ct.Package.CurrentStatus == PackageStatus.OutForDelivery)))
+                .Select(ct => new CourierTaskDTO
+                {
+                    Id = ct.Id,
+                    PackageId = ct.PackageId,
+                    TaskType = ct.TaskType,
+                    Status = ct.Status,
+                    AssignmentTime = ct.AssignmentTime,
+                    TrackingNumber = ct.Package.TrackingNumber,
+                    SenderName = ct.Package.SenderName,
+                    SenderAddress = ct.Package.SenderAddress,
+                    RecipientName = ct.Package.RecipientName,
+                    RecipientAddress = ct.Package.RecipientAddress,
+                    Size = ct.Package.Size,
+                    PickupDate = ct.Package.PickupDate,
+                    PickupSlot = ct.Package.PickupSlot
+                })
+                .ToArrayAsync();
 
-    }
+            return Ok(result);
+
+
+        }
         //A FUTÁR FELVESZI A CSOMAGOT ÉS ELINDUL A RAKTÁRBÓL
-        
+
         [Authorize(Roles = "Courier,Admin")]
         [HttpPut("pickupfromwarehouse/{packageid}")]
         public async Task<IActionResult> PickupFromWarehouse(int packageid, [FromBody] CourierDTO dto)
@@ -128,7 +155,7 @@ namespace Csomagkuldo.Controllers
                 return NotFound("A futárhoz nem tartozik feladat!");
             }
 
-           
+
             couriertask.Status = CourierTaskStatus.InProgress;
             package.CurrentStatus = PackageStatus.OutForDelivery;
 
@@ -200,20 +227,24 @@ namespace Csomagkuldo.Controllers
 
             DateTime now = DateTime.UtcNow;
             DateTime startDate = new DateTime();
-            switch(intervall)
+            switch (intervall)
             {
                 case "daily":
-                    startDate=now.Date;
-                        break;
+                    startDate = now.Date;
+                    break;
                 case "weekly":
                     startDate = now.Date.AddDays(-7);
                     break;
                 case "monthly":
                     startDate = now.Date.AddMonths(-1);
                     break;
+                case "all":
+                    startDate = DateTime.MinValue;
+                    break;
                 default:
                     break;
-            };
+            }
+            ;
 
             var tasks = await _context.CourierTasks.Where(ct => ct.CourierId == courierId&& ct.Status == CourierTaskStatus.Completed&& ct.AssignmentTime >= startDate)
                 .Select(ct => new
