@@ -463,5 +463,31 @@ namespace Csomagkuldo.Controllers
 
             return Ok();
         }
+        // FUTÁRFELADATOK LEKÉRÉSE STÁTUSZ SZERINT
+        [HttpGet("couriertasks")]
+        public async Task<IActionResult> GetCourierTasks([FromQuery] CourierTaskStatus? status)
+        {
+            var query = _context.CourierTasks.AsQueryable();
+
+            
+            if (status!=null)
+            {
+                query = query.Where(ct => ct.Status == status);
+            }
+
+            var tasks = await query.Select(ct => new
+            {
+                ct.Id,
+                ct.PackageId,
+                ct.CourierId,
+                CourierName = ct.Courier.LastName + " " + ct.Courier.FirstName,
+                ct.Status,
+                ct.AssignmentTime
+            })
+              .ToListAsync();
+
+            return Ok(tasks);
+        }
+
     }
 }
