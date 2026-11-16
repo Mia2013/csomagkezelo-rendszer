@@ -238,6 +238,7 @@ namespace Csomagkuldo.Controllers
                 Tasks = tasks
             });
         }
+        //SIKERTELEN KÉZBESÍTÉS
         [HttpPut("fail/{taskId}")]
         public async Task<IActionResult> FailDelivery(int taskId)
         {
