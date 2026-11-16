@@ -19,7 +19,7 @@ namespace Csomagkuldo.Controllers
         {
             _context = context;
         }
-        //CSOMAGOT FELVESZI A FELADOTT CSOMAGOT
+        //FUTÁR FELVESZI A FELADOTT CSOMAGOT
         [Authorize(Roles = "Courier,Admin")]
         [HttpPut("pickuppackage/{packageid}")]
         public async Task<IActionResult> Pickup(int packageid, [FromBody] CourierDTO dto)
