@@ -1,5 +1,6 @@
 ﻿using Csomagkuldo.Data;
 using Csomagkuldo.DTOs;
+using Csomagkuldo.Enums;
 using Csomagkuldo.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -97,10 +98,15 @@ namespace Csomagkuldo.Controllers
         }
         //ÖSSZES FELHASZNÁLÓK LEKÉRÉSE
         [HttpGet("users")]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] UserRole? role)
         {
-            var users = await _context.Users
-                .Select(u => new UserProfileDTO
+            var query =_context.Users.AsQueryable();
+
+            if(query!=null)
+            {
+                query = query.Where(u => u.Role == role);
+            }
+            var users = query.Select(u => new UserProfileDTO
                 {
                     
                  FirstName = u.FirstName,
@@ -419,6 +425,43 @@ namespace Csomagkuldo.Controllers
             return Ok();
         }
 
+        //ÖSSZES SHIPPINGFEE ADAT LEKÉRÉSE
+        [HttpGet("shippingfees")]
+        public async Task<IActionResult> GetAllShippingFees()
+        {
+            var shippingfees = await _context.ShippingFees.Select(sf => new ShippingFeeDTO
+                {
+                    Id = sf.Id,
+                    Type = sf.Type,
+                    MaxSize = sf.MaxSize,
+                    RegisteredPrice = sf.RegisteredPrice,
+                    UnregisteredPrice = sf.UnregisteredPrice,
+                    CapacityUnit = sf.CapacityUnit
+                })
+                .ToListAsync();
 
+            return Ok(shippingfees);
+        }
+
+        //SZÁLLÍTÁSI DÍJ MÓDOSÍTÁSA
+        [HttpPut("shippingfees/{id}")]
+        public async Task<IActionResult> UpdateShippingFee(int id, [FromBody] UpdateShippingFeeDTO dto)
+        {
+            var fee = await _context.ShippingFees.FindAsync(id);
+            if (fee == null)
+            { 
+                return NotFound("Ez a költség nem található!");
+            }
+
+
+            fee.MaxSize = dto.MaxSize;
+            fee.RegisteredPrice = dto.RegisteredPrice;
+            fee.UnregisteredPrice = dto.UnregisteredPrice;
+            fee.CapacityUnit = dto.CapacityUnit;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
