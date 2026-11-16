@@ -32,6 +32,21 @@ namespace Csomagkuldo.Controllers
             return Ok(result);
 
         }
+        //ÖSSZES FUTÁR LEKÉRÉSE
+        [HttpGet("couriers")]
+        public async Task<IActionResult> GetAllCouriers()
+        {
+            var couriers = await _context.Users.Where(u => u.Role == UserRole.Courier).Select(u => new
+            {
+                u.Id,
+                FullName = u.LastName + " " + u.FirstName,
+                u.PhoneNumber,
+                u.Email
+            })
+                .ToListAsync();
+
+            return Ok(couriers);
+        }
         //CSOMAG FUTÁRHOZ RENDELÉSE
         [Authorize(Roles = "WarehouseOperator,Admin")]
         [HttpPut("assignforpickup/{packageid}")]

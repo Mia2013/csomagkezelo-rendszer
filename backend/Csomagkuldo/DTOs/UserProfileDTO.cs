@@ -1,4 +1,7 @@
-﻿namespace Csomagkuldo.DTOs
+﻿using Csomagkuldo.Enums;
+using Microsoft.AspNetCore.Identity;
+
+namespace Csomagkuldo.DTOs
 {
     public class UserProfileDTO
     {
@@ -7,5 +10,7 @@
         public string Email { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
+
+        public UserRole Role { get; set; }
     }
 }
