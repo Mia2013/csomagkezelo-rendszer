@@ -51,6 +51,7 @@ namespace Csomagkuldo.Controllers
 
             couriertask.Status = CourierTaskStatus.InProgress;
             package.CurrentStatus = PackageStatus.InTransitToWarehouse;
+            couriertask.TaskType = CourierTaskType.Pickup;
 
             await _context.PackageStatuses.AddAsync(new PackageStatusHistory
             {
@@ -131,6 +132,7 @@ namespace Csomagkuldo.Controllers
            
             couriertask.Status = CourierTaskStatus.InProgress;
             package.CurrentStatus = PackageStatus.OutForDelivery;
+            couriertask.TaskType = CourierTaskType.Delivery;
 
             await _context.PackageStatuses.AddAsync(new PackageStatusHistory
             {
@@ -235,6 +237,32 @@ namespace Csomagkuldo.Controllers
                 TotalCompletedTasks = tasks.Count,
                 Tasks = tasks
             });
+        }
+        [HttpPut("fail/{taskId}")]
+        public async Task<IActionResult> FailDelivery(int taskId)
+        {
+            var couriertask = await _context.CourierTasks.Include(t => t.Package).FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (couriertask == null)
+            {
+                return NotFound("A feladat nem található!");
+            }
+           
+
+            if (couriertask.Package != null)
+            {
+                couriertask.Package.CurrentStatus = PackageStatus.FailedDelivery;
+
+                couriertask.Package.StatusHistory.Add(new PackageStatusHistory
+                {
+                    Status = PackageStatus.FailedDelivery,
+                    ChangedAt = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Sikertelen kézbesítés rögzítve.");
         }
 
 
