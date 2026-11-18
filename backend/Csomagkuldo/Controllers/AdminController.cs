@@ -102,11 +102,11 @@ namespace Csomagkuldo.Controllers
         {
             var query =_context.Users.AsQueryable();
 
-            if(query!=null)
+            if(role.HasValue)
             {
-                query = query.Where(u => u.Role == role);
+                query = query.Where(u => u.Role == role.Value);
             }
-            var users = query.Select(u => new UserProfileDTO
+            var users = await query.Select(u => new UserProfileDTO
                 {
                     
                  FirstName = u.FirstName,

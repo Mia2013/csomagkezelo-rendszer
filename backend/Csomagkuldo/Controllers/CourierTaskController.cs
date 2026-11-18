@@ -291,6 +291,13 @@ namespace Csomagkuldo.Controllers
                     ChangedAt = DateTime.UtcNow
                 });
             }
+            couriertask.Package.CurrentStatus = PackageStatus.InTransitToWarehouse;
+
+            couriertask.Package.StatusHistory.Add(new PackageStatusHistory
+            {
+                Status = PackageStatus.InTransitToWarehouse,
+                ChangedAt = DateTime.UtcNow
+            });
 
             await _context.SaveChangesAsync();
 
