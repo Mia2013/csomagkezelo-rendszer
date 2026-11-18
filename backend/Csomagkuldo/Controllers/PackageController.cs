@@ -37,14 +37,15 @@ public class PackageController : ControllerBase
         }
 
         int? senderId = null;
-        // A hibás tokennel érkező kérést nem mentjük el vendégfeladásként.
-        if (Request.Headers.ContainsKey("Authorization"))
+        var authHeader = Request.Headers.Authorization.ToString();
+
+        if (!string.IsNullOrWhiteSpace(authHeader) && authHeader != "Bearer")
         {
-            if (!User.Identity.IsAuthenticated)
+            if (!User.Identity!.IsAuthenticated)
             {
                 return Unauthorized("A bejelentkezés lejárt vagy érvénytelen. Jelentkezz be újra!");
             }
-            senderId = int.Parse(User.FindFirstValue("userId"));
+            senderId = int.Parse(User.FindFirstValue("userId")!);
         }
 
         var package = new Package
