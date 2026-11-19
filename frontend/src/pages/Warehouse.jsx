@@ -1,37 +1,57 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Box } from "@mui/material";
 import Warehouse from "@mui/icons-material/Warehouse";
 import LocalShipping from "@mui/icons-material/LocalShipping";
+import MoveToInbox from "@mui/icons-material/MoveToInbox";
+import Inventory2 from "@mui/icons-material/Inventory2";
 
-import { endpoints, getData } from "../api/apiCalls";
-import { useAuth } from "../provider/AuthContext";
 import Dashboard from "../components/Dashboard";
-import WarehouseList from "../components/WarehouseList";
+import WarehouseAssignToCourierList from "../components/Warehouse/WarehouseAssignToCourierList";
+import WarehouseGetPackagesByStatus from "../components/Warehouse/WarehouseGetPackagesByStatus";
 
 const WarehousePage = () => {
-  const { setAlert } = useAuth();
-  const [packages, setPackages] = useState([]);
   const [selectedId, setSelectedId] = useState("pickup");
+  const [counts, setCounts] = useState({});
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const loadPackages = () =>
-    getData(endpoints.unassignedPrebooked)
-      .then(setPackages)
-      .catch((error) => setAlert({ message: error.message, severity: "error" }));
+  const setCount = (id) => (count) => setCounts((prev) => ({ ...prev, [id]: count }));
 
-  useEffect(() => {
-    loadPackages();
-  }, [setAlert]);
+  const selectCard = (id) => {
+    setSelectedId(id);
+    setReloadKey((prev) => prev + 1);
+  };
 
   const options = [
     {
       id: "pickup",
       title: "Felvételre váró csomagok",
       icon: <LocalShipping />,
-      count: packages.length,
-      render: () => <WarehouseList packages={packages} onChanged={loadPackages} />,
+      count: counts.pickup ?? 0,
+      render: () => <WarehouseAssignToCourierList type="pickup" onLoaded={setCount("pickup")} reloadKey={reloadKey} />,
+    },
+    {
+      id: "delivery",
+      title: "Kiszállításra váró csomagok",
+      icon: <Inventory2 />,
+      count: counts.delivery ?? 0,
+      render: () => <WarehouseAssignToCourierList type="delivery" onLoaded={setCount("delivery")} reloadKey={reloadKey} />,
+    },
+    {
+      id: "incoming",
+      title: "Beérkező csomagok",
+      icon: <MoveToInbox />,
+      count: counts.incoming ?? 0,
+      render: () => (
+        <WarehouseGetPackagesByStatus
+          status="InTransitToWarehouse"
+          title="Beérkező csomagok"
+          onLoaded={setCount("incoming")}
+          onChanged={() => setReloadKey((prev) => prev + 1)}
+          reloadKey={reloadKey}
+        />
+      ),
     },
   ];
-
-  const selected = options.find((option) => option.id === selectedId);
 
   return (
     <Dashboard
@@ -39,9 +59,13 @@ const WarehousePage = () => {
       icon={<Warehouse />}
       cards={options}
       selectedId={selectedId}
-      onSelect={setSelectedId}
+      onSelect={selectCard}
     >
-      {selected.render()}
+      {options.map((option) => (
+        <Box key={option.id} sx={{ display: option.id === selectedId ? "block" : "none" }}>
+          {option.render()}
+        </Box>
+      ))}
     </Dashboard>
   );
 };

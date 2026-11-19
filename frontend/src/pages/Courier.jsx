@@ -1,59 +1,40 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Box } from "@mui/material";
 import History from "@mui/icons-material/History";
 import LocalShipping from "@mui/icons-material/LocalShipping";
 
-import { endpoints, getData } from "../api/apiCalls";
-import { useAuth } from "../provider/AuthContext";
 import Dashboard from "../components/Dashboard";
-import CourierTaskList from "../components/CourierTaskList";
-import CourierHistory from "../components/CourierHistory";
+import CourierTaskList from "../components/Courier/CourierTaskList";
+import CourierHistory from "../components/Courier/CourierHistory";
 
 const CourierPage = () => {
-  const { user, setAlert } = useAuth();
-  const [tasks, setTasks] = useState([]);
-  const [weeklyCount, setWeeklyCount] = useState(0);
   const [selectedId, setSelectedId] = useState("tasks");
+  const [counts, setCounts] = useState({});
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const loadTasks = () =>
-    Promise.all([
-      getData(`${endpoints.pickuptasks}/${user.userId}`),
-      getData(`${endpoints.deliverytasks}/${user.userId}`),
-    ])
-      .then(([pickups, deliveries]) => setTasks([...pickups, ...deliveries]))
-      .catch((error) => setAlert({ message: error.message, severity: "error" }));
+  const setCount = (id) => (count) => setCounts((prev) => ({ ...prev, [id]: count }));
 
-  const loadWeeklyCount = () =>
-    getData(`${endpoints.history}/${user.userId}`, { intervall: "weekly" })
-      .then((data) => setWeeklyCount(data.totalCompletedTasks))
-      .catch((error) => setAlert({ message: error.message, severity: "error" }));
-
-  const reload = () => {
-    loadTasks();
-    loadWeeklyCount();
+  const selectCard = (id) => {
+    setSelectedId(id);
+    setReloadKey((prev) => prev + 1);
   };
-
-  useEffect(() => {
-    reload();
-  }, [setAlert]);
 
   const options = [
     {
       id: "tasks",
       title: "Feladatok",
       icon: <LocalShipping />,
-      count: tasks.length,
-      render: () => <CourierTaskList tasks={tasks} onChanged={reload} />,
+      count: counts.tasks ?? 0,
+      render: () => <CourierTaskList onLoaded={setCount("tasks")} reloadKey={reloadKey} />,
     },
     {
       id: "history",
       title: "Előzmények",
       icon: <History />,
-      count: weeklyCount,
-      render: () => <CourierHistory />,
+      count: counts.history ?? 0,
+      render: () => <CourierHistory onLoaded={setCount("history")} reloadKey={reloadKey} />,
     },
   ];
-
-  const selected = options.find((option) => option.id === selectedId);
 
   return (
     <Dashboard
@@ -61,9 +42,13 @@ const CourierPage = () => {
       icon={<LocalShipping />}
       cards={options}
       selectedId={selectedId}
-      onSelect={setSelectedId}
+      onSelect={selectCard}
     >
-      {selected.render()}
+      {options.map((option) => (
+        <Box key={option.id} sx={{ display: option.id === selectedId ? "block" : "none" }}>
+          {option.render()}
+        </Box>
+      ))}
     </Dashboard>
   );
 };

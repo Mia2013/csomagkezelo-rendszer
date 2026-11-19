@@ -248,13 +248,15 @@ namespace Csomagkuldo.Controllers
             }
             ;
 
-            var tasks = await _context.CourierTasks.Where(ct => ct.CourierId == courierId&& ct.Status == CourierTaskStatus.Completed&& ct.AssignmentTime >= startDate)
+            var tasks = await _context.CourierTasks.Where(ct => ct.CourierId == courierId&& (ct.Status == CourierTaskStatus.Completed || ct.Status == CourierTaskStatus.Failed)&& ct.AssignmentTime >= startDate)
                 .Select(ct => new
                 {
                     TaskId = ct.Id,
                     PackageId = ct.Package.Id,
                     TrackingNumber = ct.Package.TrackingNumber,
                     AssignmentTime = ct.AssignmentTime,
+                    TaskType = ct.TaskType,
+                    TaskStatus = ct.Status,
                     PackageStatus = ct.Package.CurrentStatus,
                     SenderAddress = ct.Package.SenderAddress,
                     RecipientAddress = ct.Package.RecipientAddress
@@ -292,6 +294,7 @@ namespace Csomagkuldo.Controllers
                 });
             }
             couriertask.Package.CurrentStatus = PackageStatus.InTransitToWarehouse;
+            couriertask.Status = CourierTaskStatus.Failed;
 
             couriertask.Package.StatusHistory.Add(new PackageStatusHistory
             {
