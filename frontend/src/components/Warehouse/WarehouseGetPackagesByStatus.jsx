@@ -18,7 +18,7 @@ import { endpoints, getData, putData } from "../../api/apiCalls";
 import { PACKAGE_STATUS_COLORS, PACKAGE_STATUS_LABELS } from "../../constants/constants";
 import { useAuth } from "../../provider/AuthContext";
 
-const WarehouseGetPackagesByStatus = ({ status, title, onLoaded }) => {
+const WarehouseGetPackagesByStatus = ({ status, title, onLoaded, onChanged, reloadKey }) => {
   const { setAlert } = useAuth();
   const [packages, setPackages] = useState([]);
   const canReceive = status === "InTransitToWarehouse";
@@ -33,13 +33,13 @@ const WarehouseGetPackagesByStatus = ({ status, title, onLoaded }) => {
 
   useEffect(() => {
     loadPackages();
-  }, [status, setAlert]);
+  }, [status, setAlert, reloadKey]);
 
   const receivePackage = async (item) => {
     try {
       await putData(`${endpoints.receivetowarehouse}/${item.id}`);
       setAlert({ message: `A(z) ${item.trackingNumber} csomag bevételezve.`, severity: "success" });
-      loadPackages();
+      onChanged?.();
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     }
@@ -87,6 +87,7 @@ const WarehouseGetPackagesByStatus = ({ status, title, onLoaded }) => {
                       <Button
                         variant="contained"
                         size="small"
+                        color="secondary"
                         startIcon={<MoveToInbox />}
                         onClick={() => receivePackage(item)}
                       >

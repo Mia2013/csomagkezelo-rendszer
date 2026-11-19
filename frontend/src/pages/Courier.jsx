@@ -25,14 +25,14 @@ const CourierPage = () => {
       title: "Feladatok",
       icon: <LocalShipping />,
       count: counts.tasks ?? 0,
-      render: () => <CourierTaskList onLoaded={setCount("tasks")} />,
+      render: () => <CourierTaskList onLoaded={setCount("tasks")} reloadKey={reloadKey} />,
     },
     {
       id: "history",
       title: "Előzmények",
       icon: <History />,
       count: counts.history ?? 0,
-      render: () => <CourierHistory onLoaded={setCount("history")} />,
+      render: () => <CourierHistory onLoaded={setCount("history")} reloadKey={reloadKey} />,
     },
   ];
 
@@ -45,7 +45,7 @@ const CourierPage = () => {
       onSelect={selectCard}
     >
       {options.map((option) => (
-        <Box key={`${option.id}-${reloadKey}`} sx={{ display: option.id === selectedId ? "block" : "none" }}>
+        <Box key={option.id} sx={{ display: option.id === selectedId ? "block" : "none" }}>
           {option.render()}
         </Box>
       ))}

@@ -53,7 +53,7 @@ const getPeriodLabel = (start, period) => {
   return `${start.year()}. ${MONTHS[start.month()]}`;
 };
 
-const CourierHistory = ({ onLoaded }) => {
+const CourierHistory = ({ onLoaded, reloadKey }) => {
   const { user, setAlert } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [period, setPeriod] = useState("weekly");
@@ -72,7 +72,7 @@ const CourierHistory = ({ onLoaded }) => {
 
   useEffect(() => {
     loadHistory();
-  }, [setAlert]);
+  }, [setAlert, reloadKey]);
 
   const changePeriod = (value) => {
     setPeriod(value);

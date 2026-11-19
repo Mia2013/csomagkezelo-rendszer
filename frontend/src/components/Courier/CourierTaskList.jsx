@@ -31,7 +31,7 @@ import CourierWeekDays from "./CourierWeekDays";
 
 const today = dayjs().format("YYYY-MM-DD");
 
-const CourierTaskList = ({ onLoaded }) => {
+const CourierTaskList = ({ onLoaded, reloadKey }) => {
   const { user, setAlert } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [selectedDay, setSelectedDay] = useState(today);
@@ -53,7 +53,7 @@ const CourierTaskList = ({ onLoaded }) => {
 
   useEffect(() => {
     loadTasks();
-  }, [setAlert]);
+  }, [setAlert, reloadKey]);
 
   const getDay = (task) => dayjs(task.pickupDate).format("YYYY-MM-DD");
 

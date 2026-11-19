@@ -27,7 +27,14 @@ const WarehousePage = () => {
       title: "Felvételre váró csomagok",
       icon: <LocalShipping />,
       count: counts.pickup ?? 0,
-      render: () => <WarehouseAssignToCourierList type="pickup" onLoaded={setCount("pickup")} />,
+      render: () => <WarehouseAssignToCourierList type="pickup" onLoaded={setCount("pickup")} reloadKey={reloadKey} />,
+    },
+    {
+      id: "delivery",
+      title: "Kiszállításra váró csomagok",
+      icon: <Inventory2 />,
+      count: counts.delivery ?? 0,
+      render: () => <WarehouseAssignToCourierList type="delivery" onLoaded={setCount("delivery")} reloadKey={reloadKey} />,
     },
     {
       id: "incoming",
@@ -39,15 +46,10 @@ const WarehousePage = () => {
           status="InTransitToWarehouse"
           title="Beérkező csomagok"
           onLoaded={setCount("incoming")}
+          onChanged={() => setReloadKey((prev) => prev + 1)}
+          reloadKey={reloadKey}
         />
       ),
-    },
-    {
-      id: "delivery",
-      title: "Raktárban",
-      icon: <Inventory2 />,
-      count: counts.delivery ?? 0,
-      render: () => <WarehouseAssignToCourierList type="delivery" onLoaded={setCount("delivery")} />,
     },
   ];
 
@@ -60,7 +62,7 @@ const WarehousePage = () => {
       onSelect={selectCard}
     >
       {options.map((option) => (
-        <Box key={`${option.id}-${reloadKey}`} sx={{ display: option.id === selectedId ? "block" : "none" }}>
+        <Box key={option.id} sx={{ display: option.id === selectedId ? "block" : "none" }}>
           {option.render()}
         </Box>
       ))}

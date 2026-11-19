@@ -20,7 +20,7 @@ import { useAuth } from "../../provider/AuthContext";
 import AssignCourierForm from "./AssignCourierForm";
 import dayjs from "../../utils/dayjs";
 
-const WarehouseAssignToCourierList = ({ type, onLoaded }) => {
+const WarehouseAssignToCourierList = ({ type, onLoaded, reloadKey }) => {
   const { setAlert } = useAuth();
   const [packages, setPackages] = useState([]);
   const [editedPackage, setEditedPackage] = useState(null);
@@ -38,7 +38,7 @@ const WarehouseAssignToCourierList = ({ type, onLoaded }) => {
 
   useEffect(() => {
     loadPackages();
-  }, [type, setAlert]);
+  }, [type, setAlert, reloadKey]);
 
   return (
     <Paper sx={{ p: 4 }}>
