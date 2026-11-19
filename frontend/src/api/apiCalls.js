@@ -20,6 +20,7 @@ export const endpoints = {
   assignforpickup: `${controllers.WAREHOUSE}/assignforpickup`,
   assignfordelivery: `${controllers.WAREHOUSE}/assignfordelivery`,
   receivetowarehouse: `${controllers.WAREHOUSE}/receivetowarehouse`,
+  warehousePackages: `${controllers.WAREHOUSE}/packages`,
   pickuptasks: `${controllers.COURIER}/pickuptasks`,
   deliverytasks: `${controllers.COURIER}/deliverytasks`,
   pickuppackage: `${controllers.COURIER}/pickuppackage`,

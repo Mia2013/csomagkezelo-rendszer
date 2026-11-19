@@ -32,6 +32,40 @@ namespace Csomagkuldo.Controllers
             return Ok(result);
 
         }
+        //BEÉRKEZŐ / RAKTÁRBAN LÉVŐ CSOMAGOK LISTÁJA
+        [Authorize(Roles = "WarehouseOperator,Admin")]
+        [HttpGet("packages")]
+        public async Task<IActionResult> GetPackagesByStatus([FromQuery] PackageStatus status)
+        {
+            if (status != PackageStatus.InTransitToWarehouse && status != PackageStatus.AtWarehouse)
+            {
+                return BadRequest("Csak a beérkező és a raktárban lévő csomagok kérhetők le!");
+            }
+
+            var result = await _context.Packages.AsNoTracking()
+                .Where(p => p.CurrentStatus == status)
+                .OrderBy(p => p.PickupDate)
+                .Select(p => new WarehousePackageDTO
+                {
+                    Id = p.Id,
+                    TrackingNumber = p.TrackingNumber,
+                    SenderName = p.SenderName,
+                    SenderAddress = p.SenderAddress,
+                    RecipientName = p.RecipientName,
+                    RecipientAddress = p.RecipientAddress,
+                    Size = p.Size,
+                    PickupDate = p.PickupDate,
+                    PickupSlot = p.PickupSlot,
+                    CurrentStatus = p.CurrentStatus,
+                    CourierName = p.CourierTasks
+                        .Where(ct => ct.Status == CourierTaskStatus.InProgress)
+                        .Select(ct => ct.Courier.LastName + " " + ct.Courier.FirstName)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
         //ÖSSZES FUTÁR LEKÉRÉSE
         [HttpGet("couriers")]
         public async Task<IActionResult> GetAllCouriers()
@@ -102,7 +136,7 @@ namespace Csomagkuldo.Controllers
                 return BadRequest("Hozzárendelés nem hajtható végre!");
 
             }
-           
+
             var capacityUnit = await _context.ShippingFees.Where(s => s.Type == package.Size).Select(u => u.CapacityUnit).FirstOrDefaultAsync();
             var Car = await _context.CourierCars.Where(c => c.Capacity >= capacityUnit && c.CourierId ==dto.CourierId).FirstOrDefaultAsync();
             if (Car == null)
@@ -132,28 +166,29 @@ namespace Csomagkuldo.Controllers
 
         }
         //CSOMAG MEGÉRKEZIK A RAKTÁRBA
-        [Authorize(Roles = "Courier,Admin,WarehouseOperator")]
+        [Authorize(Roles = "WarehouseOperator,Admin")]
         [HttpPut("receivetowarehouse/{packageid}")]
-        public async Task<IActionResult> ReceiveToWarehouse(int packageid, [FromBody] CourierDTO dto)
+        public async Task<IActionResult> ReceiveToWarehouse(int packageid)
         {
             var package = await _context.Packages.FirstOrDefaultAsync(p => p.Id == packageid);
-            var courier = await _context.Users.FirstOrDefaultAsync(c => c.Id == dto.CourierId);
             if (package == null)
             {
                 return NotFound("A csomag nem található!");
             }
-            if (courier == null)
+            if (package.CurrentStatus != PackageStatus.InTransitToWarehouse)
             {
-                return NotFound("A futár nem található!");
+                return BadRequest("Csak raktár felé tartó csomag vételezhető be!");
             }
-            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(c => c.CourierId == dto.CourierId && c.PackageId == packageid);
+
+            // A raktáros nem ismeri a futárt: a csomag aktív feladatából derül ki.
+            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(c => c.PackageId == packageid && c.Status == CourierTaskStatus.InProgress);
 
             if (couriertask == null)
             {
                 return NotFound("A futár feladat nem található!");
             }
 
-            var couriercar = await _context.CourierCars.FirstOrDefaultAsync(c => c.CourierId == dto.CourierId);
+            var couriercar = await _context.CourierCars.FirstOrDefaultAsync(c => c.CourierId == couriertask.CourierId);
             if (couriercar != null)
             {
                 var capacityUnit = await _context.ShippingFees.Where(sf => sf.Type == package.Size).Select(sf => sf.CapacityUnit).FirstOrDefaultAsync();

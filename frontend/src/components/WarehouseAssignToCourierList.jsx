@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
+  Button,
   Dialog,
   DialogContent,
-  IconButton,
   Paper,
   Table,
   TableBody,
@@ -11,16 +11,31 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import LocalShipping from "@mui/icons-material/LocalShipping";
 
+import { endpoints, getData } from "../api/apiCalls";
+import { useAuth } from "../provider/AuthContext";
 import AssignCourierForm from "./AssignCourierForm";
 import dayjs from "../utils/dayjs";
 
-const WarehouseList = ({ packages, onChanged }) => {
+const WarehouseAssignToCourierList = ({ onLoaded }) => {
+  const { setAlert } = useAuth();
+  const [packages, setPackages] = useState([]);
   const [editedPackage, setEditedPackage] = useState(null);
+
+  const loadPackages = () =>
+    getData(endpoints.unassignedPrebooked)
+      .then((data) => {
+        setPackages(data);
+        onLoaded?.(data.length);
+      })
+      .catch((error) => setAlert({ message: error.message, severity: "error" }));
+
+  useEffect(() => {
+    loadPackages();
+  }, [setAlert]);
 
   return (
     <Paper sx={{ p: 4 }}>
@@ -53,11 +68,15 @@ const WarehouseList = ({ packages, onChanged }) => {
                     {dayjs(item.pickupDate).format("YYYY. MM. DD.")} {item.pickupSlot}
                   </TableCell>
                   <TableCell>
-                    <Tooltip title="Futár kiosztása">
-                      <IconButton onClick={() => setEditedPackage(item)} aria-label="Futár kiosztása">
-                        <LocalShipping color="info" />
-                      </IconButton>
-                    </Tooltip>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      color="info"
+                      startIcon={<LocalShipping />}
+                      onClick={() => setEditedPackage(item)}
+                    >
+                      Futárnak kiosztás
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -72,7 +91,7 @@ const WarehouseList = ({ packages, onChanged }) => {
               item={editedPackage}
               onSaved={() => {
                 setEditedPackage(null);
-                onChanged();
+                loadPackages();
               }}
               onCancel={() => setEditedPackage(null)}
             />
@@ -83,4 +102,4 @@ const WarehouseList = ({ packages, onChanged }) => {
   );
 };
 
-export default WarehouseList;
+export default WarehouseAssignToCourierList;
