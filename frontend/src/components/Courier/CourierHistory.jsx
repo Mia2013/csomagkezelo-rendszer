@@ -18,9 +18,9 @@ import {
 import ChevronLeft from "@mui/icons-material/ChevronLeft";
 import ChevronRight from "@mui/icons-material/ChevronRight";
 
-import { endpoints, getData } from "../api/apiCalls";
-import { useAuth } from "../provider/AuthContext";
-import dayjs from "../utils/dayjs";
+import { endpoints, getData } from "../../api/apiCalls";
+import { useAuth } from "../../provider/AuthContext";
+import dayjs from "../../utils/dayjs";
 
 const PERIODS = [
   { value: "weekly", label: "Heti" },
@@ -49,7 +49,7 @@ const periodLabel = (start, period) => {
   return `${start.year()}. ${MONTHS[start.month()]}`;
 };
 
-const CourierHistory = () => {
+const CourierHistory = ({ onLoaded }) => {
   const { user, setAlert } = useAuth();
   const [period, setPeriod] = useState("weekly");
   const [current, setCurrent] = useState(() => startOfPeriod(dayjs(), "weekly"));
@@ -57,7 +57,11 @@ const CourierHistory = () => {
 
   useEffect(() => {
     getData(`${endpoints.history}/${user.userId}`, { intervall: "all" })
-      .then((data) => setTasks(data.tasks))
+      .then((data) => {
+        setTasks(data.tasks);
+        const weekStart = startOfPeriod(dayjs(), "weekly");
+        onLoaded?.(data.tasks.filter((task) => !dayjs(task.assignmentTime).isBefore(weekStart)).length);
+      })
       .catch((error) => setAlert({ message: error.message, severity: "error" }));
   }, [user.userId, setAlert]);
 
