@@ -67,6 +67,7 @@ namespace Csomagkuldo.Controllers
             return Ok(result);
         }
         //ÖSSZES FUTÁR LEKÉRÉSE
+        [Authorize(Roles = "WarehouseOperator,Admin")]
         [HttpGet("couriers")]
         public async Task<IActionResult> GetAllCouriers()
         {
