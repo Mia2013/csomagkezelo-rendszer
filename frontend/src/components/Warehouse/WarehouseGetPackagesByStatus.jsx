@@ -14,9 +14,9 @@ import {
 } from "@mui/material";
 import MoveToInbox from "@mui/icons-material/MoveToInbox";
 
-import { endpoints, getData, putData } from "../api/apiCalls";
-import { PACKAGE_STATUS_COLORS, PACKAGE_STATUS_LABELS } from "../constants/constants";
-import { useAuth } from "../provider/AuthContext";
+import { endpoints, getData, putData } from "../../api/apiCalls";
+import { PACKAGE_STATUS_COLORS, PACKAGE_STATUS_LABELS } from "../../constants/constants";
+import { useAuth } from "../../provider/AuthContext";
 
 const WarehouseGetPackagesByStatus = ({ status, title, onLoaded }) => {
   const { setAlert } = useAuth();

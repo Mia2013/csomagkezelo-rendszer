@@ -2,17 +2,19 @@ import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import Save from "@mui/icons-material/Save";
 import Close from "@mui/icons-material/Close";
 
-import { endpoints, putData } from "../api/apiCalls";
-import { useAuth } from "../provider/AuthContext";
+import { endpoints, putData } from "../../api/apiCalls";
+import { useAuth } from "../../provider/AuthContext";
 
-const AssignCourierForm = ({ item, onSaved, onCancel }) => {
+const AssignCourierForm = ({ item, type, onSaved, onCancel }) => {
   const { setAlert } = useAuth();
+  const isPickup = type === "pickup";
+  const endpoint = isPickup ? endpoints.assignforpickup : endpoints.assignfordelivery;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget));
     try {
-      await putData(`${endpoints.assignforpickup}/${item.id}`, { courierId: data.courierId });
+      await putData(`${endpoint}/${item.id}`, { courierId: data.courierId });
       setAlert({ message: "A futár hozzá lett rendelve a csomaghoz.", severity: "success" });
       onSaved();
     } catch (error) {
@@ -23,7 +25,7 @@ const AssignCourierForm = ({ item, onSaved, onCancel }) => {
   return (
     <Box component="form" onSubmit={handleSubmit}>
       <Typography variant="h5" gutterBottom>
-        Felvétel kiosztása
+        {isPickup ? "Felvétel kiosztása" : "Kiszállítás kiosztása"}
       </Typography>
       <Stack spacing={2}>
         <TextField

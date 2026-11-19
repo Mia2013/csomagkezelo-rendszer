@@ -3,10 +3,11 @@ import { Box } from "@mui/material";
 import Warehouse from "@mui/icons-material/Warehouse";
 import LocalShipping from "@mui/icons-material/LocalShipping";
 import MoveToInbox from "@mui/icons-material/MoveToInbox";
+import Inventory2 from "@mui/icons-material/Inventory2";
 
 import Dashboard from "../components/Dashboard";
-import WarehouseAssignToCourierList from "../components/WarehouseAssignToCourierList";
-import WarehouseGetPackagesByStatus from "../components/WarehouseGetPackagesByStatus";
+import WarehouseAssignToCourierList from "../components/Warehouse/WarehouseAssignToCourierList";
+import WarehouseGetPackagesByStatus from "../components/Warehouse/WarehouseGetPackagesByStatus";
 
 const WarehousePage = () => {
   const [selectedId, setSelectedId] = useState("pickup");
@@ -26,7 +27,7 @@ const WarehousePage = () => {
       title: "Felvételre váró csomagok",
       icon: <LocalShipping />,
       count: counts.pickup ?? 0,
-      render: () => <WarehouseAssignToCourierList onLoaded={setCount("pickup")} />,
+      render: () => <WarehouseAssignToCourierList type="pickup" onLoaded={setCount("pickup")} />,
     },
     {
       id: "incoming",
@@ -40,6 +41,13 @@ const WarehousePage = () => {
           onLoaded={setCount("incoming")}
         />
       ),
+    },
+    {
+      id: "delivery",
+      title: "Raktárban",
+      icon: <Inventory2 />,
+      count: counts.delivery ?? 0,
+      render: () => <WarehouseAssignToCourierList type="delivery" onLoaded={setCount("delivery")} />,
     },
   ];
 
