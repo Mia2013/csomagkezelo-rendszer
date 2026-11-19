@@ -16,7 +16,7 @@ const CourierWeekDays = ({ tasks, selectedDay, onSelect }) => {
   };
 
   return (
-    <ButtonGroup fullWidth size="small" sx={{ mb: 3, flexWrap: "wrap" }}>
+    <ButtonGroup fullWidth  sx={{ mb: 3 }} size="small">
       {weekDays.map((day) => {
         const value = day.format("YYYY-MM-DD");
         const count = getTaskCount(day);

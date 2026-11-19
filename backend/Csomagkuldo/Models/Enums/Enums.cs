@@ -32,7 +32,8 @@
     {
         Assigned,
         InProgress,
-        Completed
+        Completed,
+        Failed
     }
     public enum PackageSize
     {

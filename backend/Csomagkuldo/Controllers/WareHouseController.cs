@@ -58,7 +58,8 @@ namespace Csomagkuldo.Controllers
                     PickupSlot = p.PickupSlot,
                     CurrentStatus = p.CurrentStatus,
                     CourierName = p.CourierTasks
-                        .Where(ct => ct.Status == CourierTaskStatus.InProgress)
+                        .Where(ct => ct.Status == CourierTaskStatus.InProgress || (ct.Status == CourierTaskStatus.Failed && p.CurrentStatus == PackageStatus.InTransitToWarehouse))
+                        .OrderByDescending(ct => ct.AssignmentTime)
                         .Select(ct => ct.Courier.LastName + " " + ct.Courier.FirstName)
                         .FirstOrDefault()
                 })
@@ -199,7 +200,10 @@ namespace Csomagkuldo.Controllers
                 return BadRequest("Csak raktár felé tartó csomag vételezhető be!");
             }
 
-            var couriertask = await _context.CourierTasks.FirstOrDefaultAsync(c => c.PackageId == packageid && c.Status == CourierTaskStatus.InProgress);
+            var couriertask = await _context.CourierTasks
+                .Where(c => c.PackageId == packageid && (c.Status == CourierTaskStatus.InProgress || c.Status == CourierTaskStatus.Failed))
+                .OrderByDescending(c => c.AssignmentTime)
+                .FirstOrDefaultAsync();
 
             if (couriertask == null)
             {
@@ -214,7 +218,10 @@ namespace Csomagkuldo.Controllers
                 couriercar.Capacity += capacityUnit;
             }
 
-            couriertask.Status = CourierTaskStatus.Completed;
+            if (couriertask.Status == CourierTaskStatus.InProgress)
+            {
+                couriertask.Status = CourierTaskStatus.Completed;
+            }
 
             package.CurrentStatus = PackageStatus.AtWarehouse;
             await _context.PackageStatuses.AddAsync(new PackageStatusHistory

@@ -38,7 +38,7 @@ namespace Csomagkuldo.Controllers
             }
 
             var currentTask = await _context.CourierTasks
-                .FirstOrDefaultAsync(ct => ct.PackageId == packageid && ct.Status !=Enums.CourierTaskStatus.Completed);
+                .FirstOrDefaultAsync(ct => ct.PackageId == packageid && ct.Status !=Enums.CourierTaskStatus.Completed && ct.Status != Enums.CourierTaskStatus.Failed);
 
             if (currentTask == null)
             {

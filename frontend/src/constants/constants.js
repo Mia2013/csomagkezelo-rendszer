@@ -34,7 +34,18 @@ export const EXPIRED_JWT_STATUS = 440;
 
 export const WEEKDAYS = ["vasárnap", "hétfő", "kedd", "szerda", "csütörtök", "péntek", "szombat"];
 
+export const MONTHS = [
+    "január", "február", "március", "április", "május", "június",
+    "július", "augusztus", "szeptember", "október", "november", "december",
+];
+
 export const TASK_TYPES = {
   Pickup: { label: "Felvétel", color: "primary" },
   Delivery: { label: "Kiszállítás", color: "secondary" },
+};
+
+export const TASK_RESULTS = {
+  PickupCompleted: { label: "Beszállítva", color: "success" },
+  DeliveryCompleted: { label: "Kézbesítve", color: "success" },
+  DeliveryFailed: { label: "Sikertelen", color: "error" },
 };
