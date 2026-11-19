@@ -88,7 +88,6 @@ const CourierHistory = ({ onLoaded }) => {
   });
 
   const workDays = periodTasks.map((task) => dayjs(task.assignmentTime).format("YYYY-MM-DD"));
-  const activeDays = new Set(workDays).size;
   const failedCount = periodTasks.filter((task) => task.taskStatus === "Failed").length;
 
   const getTaskType = (task) => TASK_TYPES[task.taskType] ?? { label: "–", color: "default" };
@@ -120,7 +119,6 @@ const CourierHistory = ({ onLoaded }) => {
       <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
         <Chip label={`Lezárt feladat: ${periodTasks.length}`} color="primary" />
         {failedCount > 0 && <Chip label={`Sikertelen: ${failedCount}`} color="error" variant="outlined" />}
-        {period !== "daily" && <Chip label={`Aktív nap: ${activeDays}`} variant="outlined" />}
       </Box>
 
       {periodTasks.length === 0 ? (

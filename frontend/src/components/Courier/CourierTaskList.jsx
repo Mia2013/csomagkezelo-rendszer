@@ -65,6 +65,8 @@ const CourierTaskList = ({ onLoaded }) => {
     .filter((task) => getDay(task) === selectedDay)
     .sort((a, b) => (a.pickupSlot ?? "").localeCompare(b.pickupSlot ?? ""));
 
+  const assignedDeliveries = dayTasks.filter((task) => task.taskType === "Delivery" && task.status === "Assigned");
+
   const taskDays = shownTasks.map(getDay).sort();
   const prevDay = taskDays.filter((day) => day < selectedDay).pop();
   const nextDay = taskDays.find((day) => day > selectedDay);
@@ -77,6 +79,18 @@ const CourierTaskList = ({ onLoaded }) => {
     } catch (error) {
       setAlert({ message: error.message, severity: "error" });
     }
+  };
+
+  const startAllDeliveries = async () => {
+    try {
+      for (const task of assignedDeliveries) {
+        await putData(`${endpoints.pickupfromwarehouse}/${task.packageId}`, { courierId: user.userId });
+      }
+      setAlert({ message: "Elindultál a csomagokkal a raktárból.", severity: "success" });
+    } catch (error) {
+      setAlert({ message: error.message, severity: "error" });
+    }
+    loadTasks();
   };
 
   const failDelivery = async (task) => {
@@ -111,6 +125,14 @@ const CourierTaskList = ({ onLoaded }) => {
           <ChevronRight />
         </IconButton>
       </Box>
+
+      {assignedDeliveries.length > 0 && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button variant="contained" color="warning" startIcon={<LocalShipping />} onClick={startAllDeliveries}>
+            Mind úton ({assignedDeliveries.length})
+          </Button>
+        </Box>
+      )}
 
       {dayTasks.length === 0 ? (
         <Alert severity="info">Ezen a napon nincs feladatod.</Alert>
