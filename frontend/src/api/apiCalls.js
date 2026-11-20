@@ -28,7 +28,7 @@ export const endpoints = {
   pickupfromwarehouse: `${controllers.COURIER}/pickupfromwarehouse`,
   deliver: `${controllers.COURIER}/deliver`,
   history: `${controllers.COURIER}/history`,
-  failDelivery: `${controllers.COURIER}/fail`,
+  fail: `${controllers.COURIER}/fail`,
   user: `${controllers.USER}`,
   updatePackage: `${controllers.PACKAGE}/update`,
   

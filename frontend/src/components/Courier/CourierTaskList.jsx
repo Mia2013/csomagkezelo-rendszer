@@ -93,9 +93,9 @@ const CourierTaskList = ({ onLoaded, reloadKey }) => {
     loadTasks();
   };
 
-  const failDelivery = async (task) => {
+  const fail= async (task) => {
     try {
-      await putData(`${endpoints.failDelivery}/${task.id}`);
+      await putData(`${endpoints.fail}/${task.id}`);
       setAlert({ message: "Sikertelen kézbesítés rögzítve.", severity: "success" });
       loadTasks();
     } catch (error) {
@@ -165,17 +165,28 @@ const CourierTaskList = ({ onLoaded, reloadKey }) => {
                   <TableCell>{task.size}</TableCell>
                   <TableCell>{task.pickupSlot}</TableCell>
                   <TableCell>
-                    <Box sx={{ display: "flex", gap: 1 }}>
+                    <Box sx={{ display: "flex", gap: 1, flexWrap: 'wrap', flexDirection: { xs: 'column', md: "row" } }}>
                       {task.taskType === "Pickup" && (
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color="info"
-                          startIcon={<Check />}
-                          onClick={() => updateTask(endpoints.pickuppackage, task, "A csomagot felvetted.")}
-                        >
-                          Felvéve
-                        </Button>
+                        <>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            color="info"
+                            startIcon={<Check />}
+                            onClick={() => updateTask(endpoints.pickuppackage, task, "A csomagot felvetted.")}
+                          >
+                            Felvéve
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            color="error"
+                            startIcon={<Close />}
+                            onClick={() => fail(task)}
+                          >
+                            Sikertelen
+                          </Button> 
+                          </>
                       )}
                       {task.taskType === "Delivery" && task.status === "Assigned" && (
                         <Button
@@ -206,7 +217,7 @@ const CourierTaskList = ({ onLoaded, reloadKey }) => {
                             size="small"
                             color="error"
                             startIcon={<Close />}
-                            onClick={() => failDelivery(task)}
+                            onClick={() => fail(task)}
                           >
                             Sikertelen
                           </Button>
